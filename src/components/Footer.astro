@@ -1,0 +1,45 @@
+---
+import { site } from '../site.config';
+import { linkEmail, linkWhatsApp } from '../lib/links';
+
+const { empresa, contato } = site;
+---
+
+<footer class="bg-surface">
+  <div class="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3">
+    <div class="space-y-3">
+      <a href="/" class="flex items-center gap-2" aria-label="Mecanify, página inicial">
+        <img src="/logo.svg" alt="" width="32" height="32" />
+        <span class="text-base font-semibold">Mecanify</span>
+      </a>
+      <p class="text-sm text-ink-muted">Sistema para oficina mecânica.</p>
+      <p class="text-sm text-ink-subtle">{empresa.razaoSocial}<br />CNPJ: {empresa.cnpj}</p>
+    </div>
+
+    <div class="space-y-1 text-sm">
+      <p class="mb-2 font-medium">Fale com a gente</p>
+      <a
+        class="flex min-h-11 items-center text-ink-muted hover:text-ink"
+        href={linkWhatsApp(contato.whatsapp, contato.mensagemWhatsApp)}
+        data-evento="whatsapp_click">WhatsApp</a
+      >
+      <a
+        class="flex min-h-11 items-center text-ink-muted hover:text-ink"
+        href={linkEmail(contato.email, contato.assuntoEmail)}
+        data-evento="email_click">{contato.email}</a
+      >
+    </div>
+
+    <div class="space-y-1 text-sm">
+      <p class="mb-2 font-medium">Legal</p>
+      <a class="flex min-h-11 items-center text-ink-muted hover:text-ink" href="/privacidade">Privacidade</a>
+      <a class="flex min-h-11 items-center text-ink-muted hover:text-ink" href="/termos">Termos de uso</a>
+      <a class="flex min-h-11 items-center text-ink-muted hover:text-ink" href="/cookies">Cookies</a>
+      <button
+        type="button"
+        data-abrir-cookies
+        class="flex min-h-11 items-center text-ink-muted hover:text-ink">Preferências de cookies</button
+      >
+    </div>
+  </div>
+</footer>

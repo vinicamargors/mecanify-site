@@ -1,16 +1,23 @@
 ---
-import '@fontsource-variable/geist';
-import '@fontsource-variable/geist-mono';
-import '../styles/global.css';
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Mecanify',
+  url: site.urls.site,
+  logo: `${site.urls.site}/logo.svg`,
+};
 ---
 
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mecanify</title>
-  </head>
-  <body>
-    <h1 class="text-brand">Mecanify</h1>
-  </body>
-</html>
+<Base
+  titulo="Mecanify: sistema para oficina mecânica"
+  descricao="Ordens de serviço, pátio, estoque, caixa e equipe em um só lugar. Teste o Mecanify 30 dias grátis, sem cartão e sem fidelidade."
+  caminho="/"
+  jsonLd={[organization]}
+>
+  <section class="mx-auto max-w-6xl px-4 py-24">
+    <h1 class="text-4xl font-semibold">Sistema para oficina mecânica que cabe no ritmo do pátio</h1>
+  </section>
+</Base>

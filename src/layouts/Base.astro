@@ -1,0 +1,44 @@
+---
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+import JsonLd from '../components/JsonLd.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppFlutuante from '../components/WhatsAppFlutuante.astro';
+
+interface Props {
+  titulo: string;
+  descricao: string;
+  caminho: string;
+  jsonLd?: object[];
+}
+const { titulo, descricao, caminho, jsonLd = [] } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#111214" />
+    <Seo titulo={titulo} descricao={descricao} caminho={caminho} />
+    <JsonLd dados={jsonLd} />
+  </head>
+  <body>
+    <Header />
+    <main class="pt-16">
+      <slot />
+    </main>
+    <Footer />
+    <WhatsAppFlutuante />
+    <script>
+      import { linkCadastro } from '../lib/links';
+      document.querySelectorAll<HTMLAnchorElement>('a[data-cta="cadastro"]').forEach((a) => {
+        a.href = linkCadastro(location.search);
+      });
+    </script>
+  </body>
+</html>
