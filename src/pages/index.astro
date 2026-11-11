@@ -1,5 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
+import Hero from '../components/home/Hero.astro';
+import Dores from '../components/home/Dores.astro';
+import Recursos from '../components/home/Recursos.astro';
+import Tour from '../components/home/Tour.astro';
+import Planos from '../components/home/Planos.astro';
+import ComoFuncionaTeste from '../components/home/ComoFuncionaTeste.astro';
+import Faq from '../components/home/Faq.astro';
+import CtaFinal from '../components/home/CtaFinal.astro';
+import { faq } from '../content/faq';
 import { site } from '../site.config';
 
 const organization = {
@@ -9,15 +18,47 @@ const organization = {
   url: site.urls.site,
   logo: `${site.urls.site}/logo.svg`,
 };
+
+const aplicativo = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Mecanify',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  url: site.urls.site,
+  inLanguage: 'pt-BR',
+  offers: site.planos.map((p) => ({
+    '@type': 'Offer',
+    name: p.nome,
+    price: String(p.mensal),
+    priceCurrency: 'BRL',
+    url: `${site.urls.site}/#planos`,
+  })),
+};
+
+const perguntas = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({
+    '@type': 'Question',
+    name: f.pergunta,
+    acceptedAnswer: { '@type': 'Answer', text: f.resposta },
+  })),
+};
 ---
 
 <Base
   titulo="Mecanify: sistema para oficina mecânica"
   descricao="Ordens de serviço, pátio, estoque, caixa e equipe em um só lugar. Teste o Mecanify 30 dias grátis, sem cartão e sem fidelidade."
   caminho="/"
-  jsonLd={[organization]}
+  jsonLd={[organization, aplicativo, perguntas]}
 >
-  <section class="mx-auto max-w-6xl px-4 py-24">
-    <h1 class="text-4xl font-semibold">Sistema para oficina mecânica que cabe no ritmo do pátio</h1>
-  </section>
+  <Hero />
+  <Dores />
+  <Recursos />
+  <Tour />
+  <Planos />
+  <ComoFuncionaTeste />
+  <Faq />
+  <CtaFinal />
 </Base>

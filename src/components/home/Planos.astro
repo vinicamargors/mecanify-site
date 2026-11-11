@@ -1,0 +1,121 @@
+---
+import Botao from '../Botao.astro';
+import { precoAnualMensal } from '../../lib/precos';
+import { site } from '../../site.config';
+---
+
+<section id="planos" data-periodo="mensal" class="mx-auto max-w-6xl space-y-10 px-4 py-16">
+  <div class="space-y-4 text-center">
+    <h2 class="text-3xl font-semibold">Planos para cada tamanho de oficina</h2>
+    <p class="text-ink-muted">Todos começam com 30 dias grátis, com tudo do Pátio Pro liberado.</p>
+
+    <div
+      role="radiogroup"
+      aria-label="Período de cobrança"
+      data-toggle-periodo
+      class="inline-flex gap-1 rounded-full bg-muted p-1"
+    >
+      <button
+        type="button"
+        role="radio"
+        aria-checked="true"
+        data-periodo-valor="mensal"
+        tabindex="0"
+        class="min-h-11 rounded-full px-5 text-sm font-medium text-ink-muted aria-checked:bg-brand aria-checked:text-on-brand"
+      >
+        Mensal
+      </button>
+      <button
+        type="button"
+        role="radio"
+        aria-checked="false"
+        data-periodo-valor="anual"
+        tabindex="-1"
+        class="min-h-11 rounded-full px-5 text-sm font-medium text-ink-muted aria-checked:bg-brand aria-checked:text-on-brand"
+      >
+        Anual <span class="ml-1 text-xs">2 meses grátis</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    {
+      site.planos.map((p) => (
+        <article
+          class={`flex flex-col gap-5 rounded-2xl p-6 ${p.destaque ? 'bg-muted ring-2 ring-brand' : 'bg-surface'}`}
+        >
+          <header class="space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-xl font-semibold">{p.nome}</h3>
+              {p.destaque && (
+                <span class="rounded-full bg-brand px-3 py-1 text-xs font-medium text-on-brand">Mais escolhido</span>
+              )}
+            </div>
+            <p class="text-sm text-ink-muted">{p.paraQuem}</p>
+          </header>
+
+          <div class="tabular-nums">
+            <p class="preco-mensal flex items-baseline gap-1">
+              <span class="text-4xl font-semibold">{`R$ ${p.mensal}`}</span>
+              <span class="text-sm text-ink-muted">/mês</span>
+            </p>
+            <p class="preco-anual flex items-baseline gap-1">
+              <span class="text-4xl font-semibold">{`R$ ${precoAnualMensal(p.mensal)}`}</span>
+              <span class="text-sm text-ink-muted">/mês no anual</span>
+            </p>
+            <p class="preco-anual mt-1 text-sm text-brand-ink">2 meses grátis: pague 10, use 12</p>
+          </div>
+
+          <ul class="flex-1 space-y-2 text-sm">
+            {
+              p.itens.map((i) => (
+                <li class="flex gap-2">
+                  <span aria-hidden="true" class="text-brand-ink">
+                    ✓
+                  </span>
+                  <span>{i}</span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <Botao cadastro origem={`planos-${p.id}`} variante={p.destaque ? 'primario' : 'secundario'}>
+            Testar 30 dias grátis
+          </Botao>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  #planos[data-periodo='mensal'] .preco-anual,
+  #planos[data-periodo='anual'] .preco-mensal {
+    display: none;
+  }
+</style>
+
+<script>
+  const secao = document.getElementById('planos');
+  const grupo = secao?.querySelector<HTMLElement>('[data-toggle-periodo]');
+  if (secao && grupo) {
+    const radios = Array.from(grupo.querySelectorAll<HTMLButtonElement>('[role=radio]'));
+    const escolher = (i: number, foco = false) => {
+      radios.forEach((r, j) => {
+        r.setAttribute('aria-checked', String(i === j));
+        r.tabIndex = i === j ? 0 : -1;
+      });
+      secao.dataset.periodo = radios[i].dataset.periodoValor;
+      if (foco) radios[i].focus();
+    };
+    radios.forEach((r, i) => r.addEventListener('click', () => escolher(i)));
+    grupo.addEventListener('keydown', (e) => {
+      const i = radios.findIndex((r) => r === document.activeElement);
+      if (i < 0) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') escolher((i + 1) % radios.length, true);
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') escolher((i - 1 + radios.length) % radios.length, true);
+      else return;
+      e.preventDefault();
+    });
+  }
+</script>

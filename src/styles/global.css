@@ -4,6 +4,9 @@
 @tailwind utilities;
 
 @layer base {
+  [hidden] {
+    display: none !important;
+  }
   html {
     background-color: rgb(var(--c-canvas));
     scroll-behavior: smooth;

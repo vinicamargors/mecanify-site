@@ -1,0 +1,22 @@
+---
+import { faq } from '../../content/faq';
+---
+
+<section id="duvidas" class="mx-auto max-w-3xl space-y-8 px-4 py-16">
+  <h2 class="text-3xl font-semibold">Dúvidas frequentes</h2>
+  <div class="space-y-2">
+    {
+      faq.map((f) => (
+        <details class="group rounded-2xl bg-surface">
+          <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium">
+            {f.pergunta}
+            <span aria-hidden="true" class="text-brand-ink transition-transform group-open:rotate-45">
+              +
+            </span>
+          </summary>
+          <p class="px-5 pb-5 text-ink-muted">{f.resposta}</p>
+        </details>
+      ))
+    }
+  </div>
+</section>

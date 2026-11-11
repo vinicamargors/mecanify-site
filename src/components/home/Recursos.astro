@@ -1,0 +1,85 @@
+---
+import Tela from '../Tela.astro';
+
+const comPrint = [
+  {
+    titulo: 'Pátio sempre à vista',
+    texto: 'O Radar mostra o que está parado, o que está em execução e o que já ficou pronto. Placa como identidade do serviço.',
+    tela: 'radar' as const,
+    alt: 'Radar do Pátio com cartões de ordens de serviço por etapa',
+  },
+  {
+    titulo: 'Ordens de serviço com etapas claras',
+    texto: 'Orçamento, aguardando peça, em execução, finalizado e pago. Cada ordem diz em que etapa está e há quantos dias.',
+    tela: 'ordens' as const,
+    alt: 'Lista de ordens de serviço com etapa e valor',
+  },
+  {
+    titulo: 'Estoque de peças com baixa na OS',
+    texto: 'A peça usada na ordem sai do estoque na hora. O painel avisa antes de acabar.',
+    tela: 'estoque' as const,
+    alt: 'Estoque de peças com quantidade mínima e alertas',
+  },
+  {
+    titulo: 'Caixa, contas e DRE',
+    texto: 'Entradas, despesas, contas a pagar e a receber, DRE e balanço. Dinheiro só muda com confirmação.',
+    tela: 'financeiro' as const,
+    alt: 'Caixa e financeiro com lucro líquido, entradas e despesas',
+  },
+  {
+    titulo: 'Equipe e RH',
+    texto: 'Colaboradores, folha, escalas, ponto eletrônico e avaliações dos clientes.',
+    tela: 'equipe' as const,
+    alt: 'Lista de colaboradores com cargo, avaliação e situação',
+  },
+];
+
+const compactos = [
+  {
+    titulo: 'Orçamento pelo WhatsApp e PIX na OS',
+    texto: 'Envie o orçamento direto no WhatsApp do cliente, cobre por PIX na ordem e receba a avaliação do serviço por link.',
+  },
+  {
+    titulo: 'Clientes e veículos pela placa',
+    texto: 'Cadastro de cliente e veículo, com histórico de cada carro que já passou pela oficina.',
+  },
+  {
+    titulo: 'Perfis por cargo',
+    texto: 'Dono, atendente, mecânico e financeiro veem só o que precisam. O mecânico não vê o financeiro.',
+  },
+  {
+    titulo: 'Auditoria',
+    texto: 'Saiba quem mexeu em cada ordem de serviço e em cada peça do estoque.',
+  },
+];
+---
+
+<section id="recursos" class="mx-auto max-w-6xl space-y-16 px-4 py-16">
+  <div class="max-w-2xl space-y-3">
+    <h2 class="text-3xl font-semibold">Tudo da oficina, no mesmo lugar</h2>
+    <p class="text-ink-muted">Do orçamento ao caixa, sem planilha e sem papel.</p>
+  </div>
+
+  {
+    comPrint.map((r, i) => (
+      <article class="grid items-center gap-8 lg:grid-cols-2">
+        <div class={`space-y-3 ${i % 2 ? 'lg:order-2' : ''}`}>
+          <h3 class="text-2xl font-semibold">{r.titulo}</h3>
+          <p class="text-ink-muted">{r.texto}</p>
+        </div>
+        <Tela tela={r.tela} largura={1440} alt={r.alt} class="w-full rounded-2xl" />
+      </article>
+    ))
+  }
+
+  <ul class="grid gap-4 md:grid-cols-2">
+    {
+      compactos.map((c) => (
+        <li class="space-y-2 rounded-2xl bg-surface p-6">
+          <h3 class="text-lg font-semibold">{c.titulo}</h3>
+          <p class="text-ink-muted">{c.texto}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>

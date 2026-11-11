@@ -1,0 +1,13 @@
+---
+const dores = [
+  'OS no papel some, rasga e não diz o que está parado.',
+  'Cliente liga toda hora perguntando se o carro está pronto.',
+  'Peça usada que ninguém lembrou de cobrar.',
+];
+---
+
+<section class="mx-auto max-w-6xl px-4 py-12" aria-label="Problemas comuns de oficina">
+  <ul class="grid gap-4 md:grid-cols-3">
+    {dores.map((d) => <li class="rounded-2xl bg-surface p-6 text-ink-muted">{d}</li>)}
+  </ul>
+</section>

@@ -1,0 +1,38 @@
+---
+import Botao from '../Botao.astro';
+import SeloTeste from '../SeloTeste.astro';
+---
+
+<section class="relative overflow-hidden">
+  <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
+    <div class="space-y-6">
+      <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+        Sistema para oficina mecânica que cabe no ritmo do pátio
+      </h1>
+      <p class="max-w-xl text-lg text-ink-muted">
+        Ordens de serviço, pátio, estoque, caixa e equipe em um só lugar. No computador do balcão ou no celular, com
+        a mão suja de graxa.
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        <Botao cadastro origem="hero" class="h-12 px-6 text-base">Testar 30 dias grátis</Botao>
+        <Botao href="#telas" variante="secundario" class="h-12 px-6 text-base">Ver o sistema</Botao>
+      </div>
+      <SeloTeste />
+    </div>
+
+    <div class="relative aspect-[6/5] w-full">
+      <picture id="hero-fallback">
+        <source type="image/avif" srcset="/hero/fallback.avif" />
+        <img
+          src="/hero/fallback.webp"
+          alt="Radar do Pátio do Mecanify aberto no computador, com as ordens de serviço divididas por etapa"
+          width="1200"
+          height="780"
+          fetchpriority="high"
+          class="h-full w-full rounded-2xl object-contain"
+        />
+      </picture>
+      <div id="hero-3d" aria-hidden="true" class="absolute inset-0"></div>
+    </div>
+  </div>
+</section>

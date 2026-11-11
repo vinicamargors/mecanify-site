@@ -23,3 +23,13 @@ npm run e2e      # testes de navegador (precisa de build)
 | DNS | Vercel: `mecanify.com.br` e `www` neste projeto; `app.` no projeto do sistema | — |
 
 Variável vazia = ferramenta desligada, sem erro. `npm run build` lista tudo que ainda falta.
+
+## Regerar os prints do sistema
+
+Os prints vêm do repo do sistema (`frontend-oficina-main`), tema escuro, dados simulados, em viewport 1440×900 e 390×844 com `deviceScaleFactor: 2`. Salve `<tela>-<largura>.png` (telas: `radar ordens estoque financeiro equipe`; larguras: `1440 390`) numa pasta e rode:
+
+```bash
+node scripts/importar-prints.mjs <pasta-com-prints>
+```
+
+O script grava AVIF e WebP em `src/assets/telas/`. Confira que nenhum print mostra dados de cliente real.

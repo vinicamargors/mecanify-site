@@ -1,0 +1,34 @@
+---
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  tela: 'radar' | 'ordens' | 'estoque' | 'financeiro' | 'equipe';
+  largura: 1440 | 390;
+  alt: string;
+  prioridade?: boolean;
+  class?: string;
+}
+const { tela, largura, alt, prioridade = false, class: extra = '' } = Astro.props;
+
+const imagens = import.meta.glob<{ default: ImageMetadata }>('../assets/telas/*.{avif,webp}', { eager: true });
+const pegar = (ext: 'avif' | 'webp') => {
+  const m = imagens[`../assets/telas/${tela}-${largura}.${ext}`];
+  if (!m) throw new Error(`print ausente: ${tela}-${largura}.${ext}`);
+  return m.default;
+};
+const avif = pegar('avif');
+const webp = pegar('webp');
+---
+
+<picture>
+  <source type="image/avif" srcset={avif.src} />
+  <img
+    src={webp.src}
+    alt={alt}
+    width={webp.width}
+    height={webp.height}
+    loading={prioridade ? 'eager' : 'lazy'}
+    decoding="async"
+    class={extra}
+  />
+</picture>

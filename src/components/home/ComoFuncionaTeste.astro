@@ -1,0 +1,22 @@
+---
+const passos = [
+  { n: '1', titulo: 'Crie a conta em 1 minuto', texto: 'Sem cartão de crédito.' },
+  { n: '2', titulo: 'Use tudo do Pátio Pro por 30 dias', texto: 'Cadastre clientes, abra ordens e controle o estoque.' },
+  { n: '3', titulo: 'Escolha o plano', texto: 'Se não escolher, seus dados continuam lá. Sem pegadinha.' },
+];
+---
+
+<section class="mx-auto max-w-6xl space-y-8 px-4 py-16">
+  <h2 class="text-3xl font-semibold">Como funciona o teste grátis</h2>
+  <ol class="grid gap-4 md:grid-cols-3">
+    {
+      passos.map((p) => (
+        <li class="space-y-2 rounded-2xl bg-surface p-6">
+          <span class="text-3xl font-semibold tabular-nums text-brand-ink">{p.n}</span>
+          <h3 class="text-lg font-semibold">{p.titulo}</h3>
+          <p class="text-ink-muted">{p.texto}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>

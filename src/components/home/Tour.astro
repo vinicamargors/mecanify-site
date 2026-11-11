@@ -1,0 +1,84 @@
+---
+import Tela from '../Tela.astro';
+
+const telas = [
+  { id: 'radar', rotulo: 'Radar', alt: 'Radar do Pátio' },
+  { id: 'ordens', rotulo: 'Ordens', alt: 'Ordens de serviço' },
+  { id: 'estoque', rotulo: 'Estoque', alt: 'Estoque de peças' },
+  { id: 'financeiro', rotulo: 'Financeiro', alt: 'Caixa e financeiro' },
+  { id: 'equipe', rotulo: 'Equipe', alt: 'Equipe e RH' },
+] as const;
+---
+
+<section id="telas" class="mx-auto max-w-6xl space-y-8 px-4 py-16">
+  <div class="max-w-2xl space-y-3">
+    <h2 class="text-3xl font-semibold">Veja as telas</h2>
+    <p class="text-ink-muted">No computador do balcão e no celular do pátio.</p>
+  </div>
+
+  <div data-tour class="space-y-6">
+    <div role="tablist" aria-label="Telas do sistema" class="inline-flex flex-wrap gap-1 rounded-full bg-muted p-1">
+      {
+        telas.map((t, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`tour-aba-${t.id}`}
+            aria-controls={`tour-painel-${t.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            class="min-h-11 rounded-full px-4 text-sm font-medium text-ink-muted aria-selected:bg-brand aria-selected:text-on-brand"
+          >
+            {t.rotulo}
+          </button>
+        ))
+      }
+    </div>
+
+    {
+      telas.map((t, i) => (
+        <div
+          role="tabpanel"
+          id={`tour-painel-${t.id}`}
+          aria-labelledby={`tour-aba-${t.id}`}
+          hidden={i !== 0}
+          class="grid items-end gap-6 md:grid-cols-[1fr_auto]"
+        >
+          <Tela tela={t.id} largura={1440} alt={`${t.alt} no computador`} class="w-full rounded-2xl" />
+          <Tela tela={t.id} largura={390} alt={`${t.alt} no celular`} class="hidden w-56 rounded-2xl md:block" />
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  const tour = document.querySelector<HTMLElement>('[data-tour]');
+  if (tour) {
+    const abas = Array.from(tour.querySelectorAll<HTMLButtonElement>('[role=tab]'));
+    const paineis = Array.from(tour.querySelectorAll<HTMLElement>('[role=tabpanel]'));
+
+    const selecionar = (i: number, foco = false) => {
+      abas.forEach((a, j) => {
+        const ativa = i === j;
+        a.setAttribute('aria-selected', String(ativa));
+        a.tabIndex = ativa ? 0 : -1;
+        paineis[j].hidden = !ativa;
+      });
+      if (foco) abas[i].focus();
+    };
+
+    abas.forEach((a, i) => a.addEventListener('click', () => selecionar(i)));
+    tour.addEventListener('keydown', (e) => {
+      const i = abas.findIndex((a) => a === document.activeElement);
+      if (i < 0) return;
+      const n = abas.length;
+      if (e.key === 'ArrowRight') selecionar((i + 1) % n, true);
+      else if (e.key === 'ArrowLeft') selecionar((i - 1 + n) % n, true);
+      else if (e.key === 'Home') selecionar(0, true);
+      else if (e.key === 'End') selecionar(n - 1, true);
+      else return;
+      e.preventDefault();
+    });
+  }
+</script>
