@@ -1,6 +1,6 @@
 # mecanify-site
 
-Landing estática de `mecanify.com.br` (Astro + Tailwind 3 + Three.js). O sistema roda em `app.mecanify.com.br`.
+Landing estática de `mecanify.com.br` (Astro + Tailwind 3). O sistema roda em `app.mecanify.com.br`.
 
 ```bash
 npm install
@@ -37,3 +37,17 @@ O script grava AVIF e WebP em `src/assets/telas/`. Confira que nenhum print most
 ## Créditos e licenças
 
 - Fundo animado do hero: port do "Cursor Ring Field" da Originkit (uso licenciado), em `src/components/home/FundoAneis.ts`.
+
+## Sequência de quadros do hero
+
+O notebook e o celular do hero são uma sequência de imagens (WebP com transparência) desenhada num `<canvas>` conforme a rolagem, no estilo das páginas de produto da Apple. Os quadros são renderizados a partir dos modelos em `modelos/*.glb` (Three.js em navegador sem tela) e ficam em `public/hero/seq/{desktop,celular}/`.
+
+```bash
+node scripts/render-sequencia.mjs                    # gera todos os quadros (~2 min)
+node scripts/render-sequencia.mjs --teste <pasta>    # só 3 quadros de cada variante, em PNG, para conferir
+```
+
+- O roteiro (posições, giros e câmera por progresso) fica em `scripts/render/roteiro.js`.
+- Quantidade e tamanho dos quadros: `src/lib/sequencia.json` (lido pelo site e pelo render).
+- As telas dos aparelhos usam `scripts/render/tela-desktop.png` e `tela-mobile.png` (prints do sistema).
+- Modelos: `modelos/notebook.glb` e `modelos/iphone.glb` (origem e licença a confirmar).

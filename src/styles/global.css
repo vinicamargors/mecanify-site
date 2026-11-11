@@ -3,24 +3,31 @@
 @tailwind components;
 @tailwind utilities;
 
-#hero-fallback {
-  transition: opacity 0.4s ease;
-}
-#hero-fallback[data-oculto] {
-  opacity: 0;
+#hero-poster[data-oculto] {
+  visibility: hidden;
 }
 
-/* Hero preso (só com 3D ativo e a partir de 1024px): o palco reserva a altura da rolagem e o conteúdo fica sticky. */
+/* Hero preso durante a sequência (só quando anima; ver data-hero-animado em Base.astro).
+   Desktop: o hero inteiro fica preso. Abaixo de 1024px: só o visual, logo abaixo do texto. */
 @media (min-width: 1024px) {
-  html[data-hero3d] [data-hero-palco] {
+  html[data-hero-animado] [data-hero-palco] {
     height: 220vh;
   }
-  html[data-hero3d] [data-hero-fixo] {
+  html[data-hero-animado] [data-hero-fixo] {
     position: sticky;
     top: 4rem;
     height: calc(100vh - 4rem);
     display: flex;
     align-items: center;
+  }
+}
+@media (max-width: 1023px) {
+  html[data-hero-animado] [data-palco-visual] {
+    height: 170vh;
+  }
+  html[data-hero-animado] [data-fixo-visual] {
+    position: sticky;
+    top: 5rem;
   }
 }
 

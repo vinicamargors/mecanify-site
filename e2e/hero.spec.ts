@@ -1,197 +1,94 @@
-import { gzipSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
 
-/** O headless daqui tem poucos núcleos; simulamos um aparelho bom. */
-async function aparelhoBom(page: Page) {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
-    Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+const QUADROS = { desktop: 120, celular: 72 };
+const largura = (page: Page) => page.viewportSize()?.width ?? 0;
+const ehCelular = (page: Page) => largura(page) < 768;
+const seq = (page: Page) => page.locator('#hero-seq');
+const quadro = (page: Page) => async () => Number(await seq(page).getAttribute('data-quadro'));
+const total = (page: Page) => (ehCelular(page) ? QUADROS.celular : QUADROS.desktop);
+
+async function fimDoPalco(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const celular = matchMedia('(max-width: 767px)').matches;
+    const palco = document.querySelector<HTMLElement>(celular ? '[data-palco-visual]' : '[data-hero-palco]')!;
+    const fixo = document.querySelector<HTMLElement>(celular ? '[data-fixo-visual]' : '[data-hero-fixo]')!;
+    const topo = palco.getBoundingClientRect().top + window.scrollY;
+    return topo + palco.offsetHeight - fixo.offsetHeight - parseFloat(getComputedStyle(fixo).top);
   });
 }
 
-const canvas = (page: Page) => page.locator('#hero-3d canvas');
-const fallback = (page: Page) => page.locator('#hero-fallback');
-
-test('aparelho bom: canvas 3D monta e o fallback sai de cena', async ({ page }) => {
-  await aparelhoBom(page);
+test('o primeiro quadro aparece já no carregamento', async ({ page }) => {
   await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  await expect(fallback(page)).toHaveAttribute('data-oculto', '');
+  await expect(seq(page)).toHaveAttribute('data-quadro', '0');
+  await expect(page.locator('#hero-poster img')).toHaveAttribute('src', /\/hero\/seq\/(desktop|celular)\/000\.webp$/);
+});
+
+test('a rolagem avança os quadros até o último, com o visual preso na tela', async ({ page }) => {
+  await page.goto('/');
+  await expect(seq(page)).toHaveAttribute('data-quadro', '0');
+  const fim = await fimDoPalco(page);
+  // Celular: o visual só prende depois que o texto sai; começa pelo início do palco do visual.
+  const inicio = ehCelular(page)
+    ? await page.evaluate(() => {
+        const p = document.querySelector<HTMLElement>('[data-palco-visual]')!;
+        const f = document.querySelector<HTMLElement>('[data-fixo-visual]')!;
+        return p.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(f).top);
+      })
+    : 0;
+  await page.evaluate((y) => window.scrollTo(0, y), inicio);
+  await page.waitForTimeout(200);
+  const y0 = (await seq(page).boundingBox())!.y;
+
+  await page.evaluate((y) => window.scrollTo(0, y), inicio + (fim - inicio) / 2);
+  await expect.poll(quadro(page)).toBeGreaterThan(total(page) * 0.3);
+  expect(Math.abs((await seq(page).boundingBox())!.y - y0)).toBeLessThanOrEqual(2);
+
+  await page.evaluate((y) => window.scrollTo(0, y), fim);
+  await expect.poll(quadro(page), { timeout: 8000 }).toBe(total(page) - 1);
+});
+
+test('todos os quadros terminam de carregar em segundo plano', async ({ page }) => {
+  await page.goto('/');
+  await expect
+    .poll(async () => Number(await seq(page).getAttribute('data-carregados')), { timeout: 20_000 })
+    .toBe(total(page));
+});
+
+test('peso da sequência dentro do orçamento', async ({ page }) => {
+  const bytes = new Map<string, number>();
+  page.on('response', async (r) => {
+    if (/\/hero\/seq\//.test(r.url())) bytes.set(r.url(), (await r.body()).length);
+  });
+  await page.goto('/');
+  await expect
+    .poll(async () => Number(await seq(page).getAttribute('data-carregados')), { timeout: 20_000 })
+    .toBe(total(page));
+  await page.waitForTimeout(300);
+  const soma = [...bytes.values()].reduce((a, b) => a + b, 0);
+  expect(soma).toBeLessThanOrEqual(ehCelular(page) ? 2_000_000 : 6_000_000);
+  // Celular nunca baixa a sequência do desktop, e vice-versa.
+  const outra = ehCelular(page) ? '/desktop/' : '/celular/';
+  expect([...bytes.keys()].some((u) => u.includes(outra))).toBe(false);
 });
 
 test.describe('reduzir movimento', () => {
   test.use({ reducedMotion: 'reduce' });
-  test('mantém o fallback e não cria canvas', async ({ page }) => {
-    await aparelhoBom(page);
+  test('mostra o último quadro, sem prender a tela', async ({ page }) => {
     await page.goto('/');
-    await page.waitForTimeout(800);
-    await expect(canvas(page)).toHaveCount(0);
-    await expect(fallback(page)).not.toHaveAttribute('data-oculto', '');
-    await expect(fallback(page)).toBeVisible();
-  });
-});
-
-test('sem WebGL: fallback visível e console sem erro', async ({ page }) => {
-  const erros: string[] = [];
-  page.on('pageerror', (e) => erros.push(e.message));
-  await aparelhoBom(page);
-  await page.addInitScript(() => {
-    HTMLCanvasElement.prototype.getContext = () => null;
-  });
-  await page.goto('/');
-  await page.waitForTimeout(800);
-  await expect(canvas(page)).toHaveCount(0);
-  await expect(fallback(page)).toBeVisible();
-  expect(erros).toEqual([]);
-});
-
-test('perda de contexto WebGL volta ao fallback', async ({ page }) => {
-  await aparelhoBom(page);
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  await canvas(page).evaluate((c) => c.dispatchEvent(new Event('webglcontextlost', { cancelable: true })));
-  await expect(canvas(page)).toHaveCount(0);
-  await expect(fallback(page)).not.toHaveAttribute('data-oculto', '');
-});
-
-test('girar o celular ajusta o canvas sem erro', async ({ page }) => {
-  const erros: string[] = [];
-  page.on('pageerror', (e) => erros.push(e.message));
-  await aparelhoBom(page);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  await page.setViewportSize({ width: 844, height: 390 });
-  await expect
-    .poll(async () => {
-      const [c, alvo] = await Promise.all([
-        canvas(page).evaluate((e) => e.clientWidth),
-        page.locator('#hero-3d').evaluate((e) => e.clientWidth),
-      ]);
-      return Math.abs(c - alvo);
-    })
-    .toBeLessThanOrEqual(1);
-  expect(erros).toEqual([]);
-});
-
-test.describe('sem JavaScript', () => {
-  test.use({ javaScriptEnabled: false });
-  test('fallback visível', async ({ page }) => {
-    await page.goto('/');
-    await expect(fallback(page)).toBeVisible();
-  });
-});
-
-test('peso do 3D (JS gzip + texturas) até 600 KB', async ({ page }) => {
-  let total = 0;
-  const vistos = new Set<string>();
-  page.on('response', async (r) => {
-    const url = r.url();
-    if (vistos.has(url)) return;
-    const js3d = /\/_astro\/(Hero3D|three)[^/]*\.js$/.test(url);
-    const textura = /\/_astro\/radar-(1440|390)[^/]*\.webp$/.test(url);
-    if (!js3d && !textura) return;
-    vistos.add(url);
-    const corpo = await r.body();
-    total += js3d ? gzipSync(corpo).length : corpo.length;
-  });
-  await aparelhoBom(page);
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  await page.waitForTimeout(500);
-  expect(vistos.size).toBeGreaterThanOrEqual(3);
-  expect(total).toBeLessThanOrEqual(600_000);
-});
-
-const larguraDaTela = (page: Page) => page.viewportSize()?.width ?? 0;
-const visual = (page: Page) => page.locator('#hero-3d');
-const progresso = (page: Page) => async () => Number(await visual(page).getAttribute('data-progresso'));
-
-test('desktop: hero fica preso e o progresso acompanha a rolagem', async ({ page }) => {
-  test.skip(larguraDaTela(page) < 1024, 'hero preso só a partir de 1024px');
-  await aparelhoBom(page);
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  const y0 = (await visual(page).boundingBox())!.y;
-  expect(await progresso(page)()).toBeLessThan(0.05);
-
-  await page.evaluate(() => window.scrollTo(0, 400));
-  await expect.poll(progresso(page)).toBeGreaterThan(0.1);
-  expect(Math.abs((await visual(page).boundingBox())!.y - y0)).toBeLessThanOrEqual(2);
-
-  const fimDoPalco = await page.evaluate(() => {
-    const palco = document.querySelector<HTMLElement>('[data-hero-palco]')!;
-    const fixo = document.querySelector<HTMLElement>('[data-hero-fixo]')!;
-    return palco.offsetHeight - fixo.offsetHeight;
-  });
-  await page.evaluate((y) => window.scrollTo(0, y), fimDoPalco);
-  await expect.poll(progresso(page)).toBeGreaterThan(0.98);
-
-  await page.evaluate((y) => window.scrollTo(0, y + 500), fimDoPalco);
-  await expect.poll(async () => (await visual(page).boundingBox())!.y).toBeLessThan(y0 - 400);
-});
-
-test('o notebook abre a tampa sozinho ao carregar', async ({ page }) => {
-  await aparelhoBom(page);
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  await expect.poll(async () => Number(await visual(page).getAttribute('data-abertura')), { timeout: 4000 }).toBeGreaterThan(0.99);
-});
-
-test('celular: sem hero preso, a página rola normalmente', async ({ page }) => {
-  test.skip(larguraDaTela(page) >= 1024, 'só no celular');
-  await aparelhoBom(page);
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  const altura = await page.evaluate(() => ({
-    palco: document.querySelector<HTMLElement>('[data-hero-palco]')!.offsetHeight,
-    janela: window.innerHeight,
-  }));
-  expect(altura.palco).toBeLessThan(altura.janela * 1.4);
-  const y0 = (await visual(page).boundingBox())!.y;
-  await page.evaluate(() => window.scrollTo(0, 300));
-  await expect.poll(async () => (await visual(page).boundingBox())!.y).toBeLessThan(y0 - 250);
-});
-
-test.describe('reduzir movimento no palco', () => {
-  test.use({ reducedMotion: 'reduce' });
-  test('não prende o hero nem reserva altura extra', async ({ page }) => {
-    await aparelhoBom(page);
-    await page.goto('/');
-    await expect(page.locator('html')).not.toHaveAttribute('data-hero3d', /.*/);
+    await expect(page.locator('html')).not.toHaveAttribute('data-hero-animado', /.*/);
+    await expect(seq(page)).toHaveAttribute('data-quadro', String(total(page) - 1));
     const altura = await page.evaluate(() => ({
       palco: document.querySelector<HTMLElement>('[data-hero-palco]')!.offsetHeight,
       janela: window.innerHeight,
     }));
-    expect(altura.palco).toBeLessThan(altura.janela * 1.4);
+    expect(altura.palco).toBeLessThan(altura.janela * 2);
   });
 });
 
-
-test('aparelho médio (4 núcleos, 4 GB) também recebe o 3D', async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 });
-    Object.defineProperty(navigator, 'deviceMemory', { get: () => 4 });
+test.describe('sem JavaScript', () => {
+  test.use({ javaScriptEnabled: false });
+  test('o pôster aparece', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('#hero-poster img')).toBeVisible();
   });
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-});
-
-test('o 3D se mexe sozinho, sem rolagem nem mouse', async ({ page }) => {
-  await aparelhoBom(page);
-  await page.goto('/');
-  await expect(canvas(page)).toHaveCount(1);
-  await expect.poll(async () => Number(await visual(page).getAttribute('data-abertura'))).toBeGreaterThan(0.99);
-  const amostra = async () => Number(await visual(page).getAttribute('data-balanco'));
-  const a = await amostra();
-  await page.waitForTimeout(700);
-  expect(Math.abs((await amostra()) - a)).toBeGreaterThan(0.001);
-});
-
-test('celular: área do 3D é mais alta que larga', async ({ page }) => {
-  test.skip(larguraDaTela(page) >= 768, 'só no celular');
-  await aparelhoBom(page);
-  await page.goto('/');
-  const caixa = (await visual(page).boundingBox())!;
-  expect(caixa.height / caixa.width).toBeGreaterThanOrEqual(1);
 });
