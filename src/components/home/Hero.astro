@@ -23,8 +23,10 @@ import texturaMobile from '../../assets/telas/radar-390.webp';
       <SeloTeste />
     </div>
 
-    <div class="relative aspect-[6/5] w-full">
+    <div class="relative mx-auto aspect-[5/6] w-full max-w-md md:aspect-[6/5] md:max-w-none">
       <picture id="hero-fallback" class="block">
+        <source media="(max-width: 767px)" type="image/avif" srcset="/hero/fallback-mobile.avif" />
+        <source media="(max-width: 767px)" type="image/webp" srcset="/hero/fallback-mobile.webp" />
         <source type="image/avif" srcset="/hero/fallback.avif" />
         <img
           src="/hero/fallback.webp"

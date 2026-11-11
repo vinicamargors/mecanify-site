@@ -166,3 +166,32 @@ test.describe('reduzir movimento no palco', () => {
     expect(altura.palco).toBeLessThan(altura.janela * 1.4);
   });
 });
+
+
+test('aparelho médio (4 núcleos, 4 GB) também recebe o 3D', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 });
+    Object.defineProperty(navigator, 'deviceMemory', { get: () => 4 });
+  });
+  await page.goto('/');
+  await expect(canvas(page)).toHaveCount(1);
+});
+
+test('o 3D se mexe sozinho, sem rolagem nem mouse', async ({ page }) => {
+  await aparelhoBom(page);
+  await page.goto('/');
+  await expect(canvas(page)).toHaveCount(1);
+  await expect.poll(async () => Number(await visual(page).getAttribute('data-abertura'))).toBeGreaterThan(0.99);
+  const amostra = async () => Number(await visual(page).getAttribute('data-balanco'));
+  const a = await amostra();
+  await page.waitForTimeout(700);
+  expect(Math.abs((await amostra()) - a)).toBeGreaterThan(0.001);
+});
+
+test('celular: área do 3D é mais alta que larga', async ({ page }) => {
+  test.skip(larguraDaTela(page) >= 768, 'só no celular');
+  await aparelhoBom(page);
+  await page.goto('/');
+  const caixa = (await visual(page).boundingBox())!;
+  expect(caixa.height / caixa.width).toBeGreaterThanOrEqual(1);
+});

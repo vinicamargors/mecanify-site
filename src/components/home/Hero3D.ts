@@ -2,6 +2,7 @@ import {
   AmbientLight,
   BoxGeometry,
   BufferGeometry,
+  CanvasTexture,
   CircleGeometry,
   CylinderGeometry,
   DirectionalLight,
@@ -18,6 +19,8 @@ import {
   Quaternion,
   SRGBColorSpace,
   Scene,
+  Sprite,
+  SpriteMaterial,
   Texture,
   TextureLoader,
   Vector3,
@@ -36,6 +39,40 @@ export type OpcoesHero = {
 
 const GRAUS = Math.PI / 180;
 const DURACAO_ABERTURA_MS = 1000;
+/** Tamanho do brilho âmbar (fica bem atrás dos aparelhos para nunca cruzar a tampa). */
+const BRILHO = 12;
+const TAN_METADE_FOV = Math.tan((30 / 2) * GRAUS);
+
+type Layout = {
+  notebook: { x: number; y: number; z: number; s: number };
+  celular: { x: number; y: number; z: number; s: number; giro: number };
+  /** Tamanho aproximado da composição, para enquadrar a câmera. */
+  largura: number;
+  altura: number;
+  mira: { x: number; y: number };
+  /** Fração da distância da câmera ao fim da rolagem (menor = mais perto). */
+  aproximacao: number;
+};
+
+/** Tela larga: notebook à esquerda e celular à direita, à frente. */
+const PAISAGEM: Layout = {
+  notebook: { x: -0.55, y: -0.4, z: 0, s: 1 },
+  celular: { x: 1.6, y: -0.4, z: 0.9, s: 1, giro: -0.35 },
+  largura: 5.3,
+  altura: 3.0,
+  mira: { x: 0.25, y: 0.3 },
+  aproximacao: 0.84,
+};
+
+/** Tela estreita (celular em pé): notebook em cima e celular grande à frente, embaixo. */
+const RETRATO: Layout = {
+  notebook: { x: 0, y: 0.55, z: -0.6, s: 0.98 },
+  celular: { x: 0.75, y: -1.25, z: 1.3, s: 1.3, giro: -0.22 },
+  largura: 4.2,
+  altura: 5.5,
+  mira: { x: 0.15, y: 0.2 },
+  aproximacao: 0.95,
+};
 
 const limitar = (v: number) => MathUtils.clamp(v, 0, 1);
 /** Suaviza 0..1 (começo e fim lentos). */
@@ -146,15 +183,31 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
   const geoTelaC = geo(new PlaneGeometry(0.74, 1.6));
 
   const celular = new Group();
-  celular.position.set(1.6, -0.4, 0.9);
-  celular.rotation.y = -0.35;
   const corpoCelular = new Mesh(geoCelular, grafite);
   corpoCelular.position.y = 0.85;
   const planoC = new Mesh(geoTelaC, telaCelular);
   planoC.position.set(0, 0.85, 0.041);
   celular.add(corpoCelular, planoC);
 
-  raiz.add(notebook, celular);
+  // Brilho âmbar atrás dos aparelhos: dá profundidade ao fundo escuro.
+  const cvBrilho = document.createElement('canvas');
+  cvBrilho.width = cvBrilho.height = 256;
+  const ctxBrilho = cvBrilho.getContext('2d');
+  if (ctxBrilho) {
+    const grad = ctxBrilho.createRadialGradient(128, 128, 0, 128, 128, 128);
+    grad.addColorStop(0, 'rgba(245,165,36,0.42)');
+    grad.addColorStop(0.55, 'rgba(245,165,36,0.12)');
+    grad.addColorStop(1, 'rgba(245,165,36,0)');
+    ctxBrilho.fillStyle = grad;
+    ctxBrilho.fillRect(0, 0, 256, 256);
+  }
+  const texturaBrilho = new CanvasTexture(cvBrilho);
+  texturaBrilho.colorSpace = SRGBColorSpace;
+  const brilho = new Sprite(mat(new SpriteMaterial({ map: texturaBrilho, transparent: true, depthWrite: false })));
+  brilho.position.set(0.2, 0.7, -6);
+  brilho.scale.set(BRILHO, BRILHO, 1);
+
+  raiz.add(brilho, notebook, celular);
 
   let desmontado = false;
   let visivel = true;
@@ -164,10 +217,16 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
 
   let distanciaBase = 8.7;
   let pronto = false;
+  let layout: Layout = PAISAGEM;
 
   function posicionarCamera(t2: number): void {
-    camera.position.set(MathUtils.lerp(0.15, 0.05, t2), MathUtils.lerp(2.6, 2.3, t2), distanciaBase * MathUtils.lerp(1, 0.84, t2));
-    camera.lookAt(MathUtils.lerp(0.25, 0.05, t2), MathUtils.lerp(0.3, 0.6, t2), 0);
+    const { mira } = layout;
+    camera.position.set(
+      MathUtils.lerp(mira.x - 0.1, mira.x - 0.2, t2),
+      MathUtils.lerp(2.6, 2.3, t2),
+      distanciaBase * MathUtils.lerp(1, layout.aproximacao, t2),
+    );
+    camera.lookAt(MathUtils.lerp(mira.x, mira.x - 0.2, t2), MathUtils.lerp(mira.y, mira.y + 0.3, t2), 0);
   }
 
   function ajustar(): void {
@@ -175,8 +234,15 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
     const h = Math.max(1, alvo.clientHeight);
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // Afasta a câmera em telas estreitas para a cena caber na largura.
-    distanciaBase = 8.7 * Math.max(1, 1.25 / camera.aspect);
+    layout = camera.aspect < 1.05 ? RETRATO : PAISAGEM;
+    notebook.position.set(layout.notebook.x, layout.notebook.y, layout.notebook.z);
+    notebook.scale.setScalar(layout.notebook.s);
+    celular.position.z = layout.celular.z;
+    celular.position.x = layout.celular.x;
+    celular.scale.setScalar(layout.celular.s);
+    // Enquadra a composição inteira: o que mais limitar (altura ou largura) define a distância.
+    distanciaBase =
+      Math.max(layout.altura / 2 / TAN_METADE_FOV, layout.largura / 2 / (TAN_METADE_FOV * camera.aspect)) * 1.05;
     posicionarCamera(opcoes.estatico ? 0 : t2Atual);
     camera.updateProjectionMatrix();
     // setSize limpa o canvas: redesenha já, senão o hero pisca até o próximo quadro.
@@ -208,21 +274,30 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
     return suave((agora - inicioAbertura) / DURACAO_ABERTURA_MS);
   }
 
-  /** Fase 1 (0–50%): celular sobe e gira. Fase 2 (50–100%): câmera se aproxima e o conjunto gira. */
-  function aplicarPose(p: number, aberta: number): void {
+  /**
+   * Fase 1 (0–50%): celular sobe e gira. Fase 2 (50–100%): câmera se aproxima e o conjunto gira.
+   * `agora` (ms) alimenta o movimento ocioso: balanço do conjunto, flutuação dos aparelhos e pulso do brilho.
+   */
+  function aplicarPose(p: number, aberta: number, agora = 0): void {
     const t1 = suave(p / 0.5);
     const t2 = suave((p - 0.5) / 0.5);
     t2Atual = t2;
+    const ocioso = opcoes.estatico ? 0 : 1;
+    const balanco = Math.sin(agora / 1700) * ocioso;
     tampa.rotation.x = MathUtils.lerp(Math.PI / 2, -0.18, aberta);
     tampa.position.y = MathUtils.lerp(0.1, 0.05, aberta);
-    celular.position.y = MathUtils.lerp(-1.25, -0.4, t1);
-    celular.rotation.y = -0.35 + (1 - t1) * 0.9;
+    notebook.position.y = layout.notebook.y + Math.sin(agora / 1300 + 1) * 0.035 * ocioso;
+    celular.position.y = layout.celular.y - 0.85 * (1 - t1) + Math.sin(agora / 820) * 0.06 * ocioso;
+    celular.rotation.y = layout.celular.giro + (1 - t1) * 0.9 + Math.sin(agora / 1500) * 0.04 * ocioso;
     raiz.rotation.x = rot.x;
-    raiz.rotation.y = -0.2 + rot.y + t2 * 20 * GRAUS;
+    raiz.rotation.y = -0.2 + rot.y + t2 * 20 * GRAUS + balanco * 5 * GRAUS;
+    const pulso = BRILHO + Math.sin(agora / 1100) * 0.5 * ocioso;
+    brilho.scale.set(pulso, pulso, 1);
     posicionarCamera(t2);
     camera.updateProjectionMatrix();
     alvo.dataset.progresso = p.toFixed(3);
     alvo.dataset.abertura = aberta.toFixed(3);
+    alvo.dataset.balanco = balanco.toFixed(4);
   }
 
   function aoPonteiro(e: PointerEvent): void {
@@ -237,7 +312,7 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
     if (desmontado || !visivel || document.hidden) return;
     rot.x = MathUtils.lerp(rot.x, alvoRot.x, 0.08);
     rot.y = MathUtils.lerp(rot.y, alvoRot.y, 0.08);
-    aplicarPose(calcularProgresso(), abertura(agora));
+    aplicarPose(calcularProgresso(), abertura(agora), agora);
     renderer.render(cena, camera);
     quadro = requestAnimationFrame(desenhar);
   }

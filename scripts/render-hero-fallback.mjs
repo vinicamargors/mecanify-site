@@ -40,17 +40,27 @@ try {
   });
 
   const navegador = await chromium.launch({ executablePath: executavel() });
-  const pagina = await navegador.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
-  await pagina.goto(`http://127.0.0.1:${PORTA}/?render-fallback=1`);
-  await pagina.locator('#hero-fallback[data-oculto]').waitFor({ timeout: 20_000 });
-  await pagina.waitForTimeout(300);
-  const png = await pagina.locator('#hero-3d').screenshot();
-  await navegador.close();
+  const fundo = { r: 17, g: 18, b: 20, alpha: 1 };
 
-  const img = () => sharp(png).resize(1200, 1000, { fit: 'contain', background: { r: 17, g: 18, b: 20, alpha: 1 } });
-  await img().avif({ quality: 55 }).toFile(join(raiz, 'public/hero/fallback.avif'));
-  await img().webp({ quality: 80 }).toFile(join(raiz, 'public/hero/fallback.webp'));
-  console.log('fallback do hero gerado');
+  // Desktop (paisagem) e celular (retrato): a cena escolhe o enquadramento pelo formato da área.
+  const variantes = [
+    { nome: 'fallback', viewport: { width: 1440, height: 900 }, escala: 2, saida: [1200, 1000] },
+    { nome: 'fallback-mobile', viewport: { width: 390, height: 1100 }, escala: 3, saida: [1000, 1200] },
+  ];
+  for (const v of variantes) {
+    const pagina = await navegador.newPage({ viewport: v.viewport, deviceScaleFactor: v.escala });
+    await pagina.goto(`http://127.0.0.1:${PORTA}/?render-fallback=1`);
+    await pagina.addStyleTag({ content: '#banner-cookies, #whatsapp-flutuante { display: none !important; }' });
+    await pagina.locator('#hero-fallback[data-oculto]').waitFor({ timeout: 20_000 });
+    await pagina.waitForTimeout(300);
+    const png = await pagina.locator('#hero-3d').screenshot();
+    await pagina.close();
+    const img = () => sharp(png).resize(v.saida[0], v.saida[1], { fit: 'contain', background: fundo });
+    await img().avif({ quality: 55 }).toFile(join(raiz, `public/hero/${v.nome}.avif`));
+    await img().webp({ quality: 80 }).toFile(join(raiz, `public/hero/${v.nome}.webp`));
+  }
+  await navegador.close();
+  console.log('fallbacks do hero gerados');
 } finally {
   servidor.kill('SIGKILL');
 }
