@@ -48,7 +48,8 @@
     scroll-padding-top: 5rem;
   }
   body {
-    @apply bg-canvas font-sans text-ink antialiased;
+    /* Fundo transparente: a cor vem do <html>, e o fundo animado (z-index -10) fica entre os dois. */
+    @apply font-sans text-ink antialiased;
   }
   @media (prefers-reduced-motion: reduce) {
     html {

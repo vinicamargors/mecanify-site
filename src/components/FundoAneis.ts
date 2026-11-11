@@ -18,8 +18,8 @@ const MAX_POINTS = 65536;
 const TAU = Math.PI * 2;
 const MAX_COLORS = 5;
 const RING_EDGE = 4;
-/** Quanto a rolagem do hero (0..1) desce o anel, em unidades do campo. */
-const DESLOCAMENTO_ROLAGEM = 0.35;
+/** Fração da meia-altura visível que a rolagem pode deslocar o anel (para cima ou para baixo). */
+const DESLOCAMENTO_ROLAGEM = 0.6;
 
 const NOISE = `
 vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
@@ -435,8 +435,8 @@ export type OpcoesFundo = {
   cores: string[];
   /** Densidade do original (0–300). Mais alto = campo mais denso. */
   densidade: number;
-  /** Progresso de rolagem do hero, 0..1. Desloca o anel para baixo. */
-  progresso: () => number;
+  /** Deslocamento vertical do anel pela rolagem, de -1 (topo) a 1 (base) da área visível. */
+  deslocamento: () => number;
   /** Um quadro só, sem animação (reduzir movimento). */
   estatico?: boolean;
   dprMax?: number;
@@ -447,7 +447,7 @@ const DOT_SIZE = 1.2;
 const SPEED = 6 / 50;
 const CAM_DIST = 1.6;
 /** Meia-largura visível mínima do campo, em unidades de mundo, para telas em pé (celular). */
-const MEIA_LARGURA_MIN = 0.65;
+const MEIA_LARGURA_MIN = 1.4;
 
 /** Monta o fundo animado no canvas. Devolve a função de desmontar. Lança se não houver WebGL. */
 export function montarFundo(canvas: HTMLCanvasElement, opcoes: OpcoesFundo): () => void {
@@ -573,10 +573,14 @@ export function montarFundo(canvas: HTMLCanvasElement, opcoes: OpcoesFundo): () 
     const wy = (valueNoise1(wander * 0.75, 21.028) - 0.5) * 2;
     follow += ((pointer.over ? 1 : 0) - follow) * (1 - Math.pow(1 - HANDOVER_LERP, dt * 60));
 
-    // A rolagem do hero desce o anel; no celular (sem cursor) é a principal forma de interação.
-    const descida = -DESLOCAMENTO_ROLAGEM * Math.min(Math.max(opcoes.progresso(), 0), 1);
-    const wanderX = wx * 0.2;
-    const wanderY = wy * 0.1 + descida;
+    // Área visível do campo, em unidades do campo: o passeio e a rolagem ficam dentro dela,
+    // senão o anel sai da tela em telas estreitas (celular) e o campo apaga.
+    const meiaAltura = camDist / projF / WORLD;
+    const meiaLargura = meiaAltura * aspect;
+    // A rolagem move o anel; no celular (sem cursor) é a principal forma de interação.
+    const descida = -DESLOCAMENTO_ROLAGEM * meiaAltura * Math.min(Math.max(opcoes.deslocamento(), -1), 1);
+    const wanderX = wx * Math.min(0.2, meiaLargura * 0.7);
+    const wanderY = wy * Math.min(0.1, meiaAltura * 0.3) + descida;
     let tx = wanderX;
     let ty = wanderY;
     if (follow > 0.0001) {

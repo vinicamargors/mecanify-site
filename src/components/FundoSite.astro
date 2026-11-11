@@ -1,0 +1,37 @@
+<!-- Fundo animado do site inteiro (Cursor Ring Field, Originkit): fixo atrás de todo o conteúdo, discreto. -->
+<canvas
+  id="fundo-site"
+  aria-hidden="true"
+  class="pointer-events-none fixed inset-0 -z-10 h-full w-full opacity-50 md:opacity-[0.35]"></canvas>
+
+<script>
+  import { montarFundo } from './FundoAneis';
+
+  const canvas = document.getElementById('fundo-site') as HTMLCanvasElement | null;
+
+  /** A rolagem faz o anel subir e descer devagar (uma onda a cada ~2.200px), sempre dentro da tela. */
+  const deslocamentoPorRolagem = () => Math.sin(window.scrollY / 700);
+
+  function iniciar(): void {
+    if (!canvas) return;
+    const animado = document.documentElement.hasAttribute('data-hero-animado');
+    const celular = matchMedia('(max-width: 767px)').matches;
+    try {
+      montarFundo(canvas, {
+        cores: ['#F5B544', '#D98A0B', '#5A3A08'],
+        densidade: celular ? 220 : 300,
+        dprMax: celular ? 1.5 : 2,
+        deslocamento: deslocamentoPorRolagem,
+        estatico: !animado,
+      });
+      canvas.dataset.ativo = '';
+      if (!animado) canvas.dataset.estatico = '';
+    } catch {
+      // Sem WebGL: fica o fundo liso da página.
+    }
+  }
+
+  // Monta depois do carregamento para não competir com o conteúdo principal.
+  if (document.readyState === 'complete') iniciar();
+  else window.addEventListener('load', iniciar, { once: true });
+</script>

@@ -36,7 +36,7 @@ O script grava AVIF e WebP em `src/assets/telas/`. Confira que nenhum print most
 
 ## Créditos e licenças
 
-- Fundo animado do hero: port do "Cursor Ring Field" da Originkit (uso licenciado), em `src/components/home/FundoAneis.ts`.
+- Fundo animado do site: port do "Cursor Ring Field" da Originkit (uso licenciado), em `src/components/FundoAneis.ts`.
 
 ## Sequência de quadros do hero
 

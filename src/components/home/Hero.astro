@@ -9,7 +9,6 @@ const poster = (base: string) => `${base}/000.webp`;
 
 <section data-hero-palco class="relative">
   <div data-hero-fixo class="relative overflow-clip">
-    <canvas id="hero-fundo" aria-hidden="true" class="pointer-events-none absolute inset-0 h-full w-full"></canvas>
     <!-- Véu sobre o fundo animado onde fica o texto: mantém o título legível. -->
     <div
       aria-hidden="true"
@@ -65,7 +64,6 @@ const poster = (base: string) => `${base}/000.webp`;
 
 <script>
   import { montarSequencia } from './SequenciaHero';
-  import { montarFundo } from './FundoAneis';
 
   const palcoHero = document.querySelector<HTMLElement>('[data-hero-palco]');
   const fixoHero = document.querySelector<HTMLElement>('[data-hero-fixo]');
@@ -104,33 +102,4 @@ const poster = (base: string) => `${base}/000.webp`;
     }
   }
 
-  // --- Fundo animado: monta depois do carregamento para não competir com o conteúdo principal ---
-  const canvasFundo = document.getElementById('hero-fundo') as HTMLCanvasElement | null;
-
-  function progressoHero(): number {
-    if (!palcoHero || !fixoHero) return 0;
-    const curso = Math.max(palcoHero.offsetHeight - fixoHero.offsetHeight, palcoHero.offsetHeight * 0.6, 1);
-    return limitar(-palcoHero.getBoundingClientRect().top / curso);
-  }
-
-  function iniciarFundo(): void {
-    if (!canvasFundo) return;
-    const celular = matchMedia('(max-width: 767px)').matches;
-    try {
-      montarFundo(canvasFundo, {
-        cores: ['#F5B544', '#D98A0B', '#5A3A08'],
-        densidade: celular ? 220 : 300,
-        dprMax: celular ? 1.5 : 2,
-        progresso: progressoHero,
-        estatico: !animado,
-      });
-      canvasFundo.dataset.ativo = '';
-      if (!animado) canvasFundo.dataset.estatico = '';
-    } catch {
-      // Sem WebGL: fica o fundo liso da página.
-    }
-  }
-
-  if (document.readyState === 'complete') iniciarFundo();
-  else window.addEventListener('load', iniciarFundo, { once: true });
 </script>

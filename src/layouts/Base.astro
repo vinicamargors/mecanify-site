@@ -8,6 +8,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppFlutuante from '../components/WhatsAppFlutuante.astro';
 import BannerCookies from '../components/BannerCookies.astro';
+import FundoSite from '../components/FundoSite.astro';
 import { deveAnimar } from '../lib/dispositivo';
 
 interface Props {
@@ -53,6 +54,7 @@ const idsRastreio = {
     <JsonLd dados={jsonLd} />
   </head>
   <body>
+    <FundoSite />
     <Header />
     <main class="pt-16">
       <slot />
