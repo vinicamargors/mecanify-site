@@ -13,7 +13,7 @@ const PORTA = 4340;
 /** Tamanho final de cada quadro; o render sai no dobro e é reduzido (supersampling). */
 export const VARIANTES = {
   desktop: { quadros: 120, largura: 1200, altura: 1000, qualidade: 74 },
-  celular: { quadros: 72, largura: 800, altura: 1000, qualidade: 72 },
+  celular: { quadros: 60, largura: 780, altura: 1040, qualidade: 60 },
 };
 
 function executavel() {
@@ -29,6 +29,8 @@ function executavel() {
 }
 
 const iTeste = process.argv.indexOf('--teste');
+const iVariante = process.argv.indexOf('--variante');
+const soVariante = iVariante >= 0 ? process.argv[iVariante + 1] : null;
 const pastaTeste = iTeste >= 0 ? resolve(process.argv[iTeste + 1]) : null;
 
 const servidor = await servir(PORTA);
@@ -38,6 +40,7 @@ const navegador = await chromium.launch({
 });
 try {
   for (const [nome, v] of Object.entries(VARIANTES)) {
+    if (soVariante && nome !== soVariante) continue;
     const w = v.largura * 2;
     const h = v.altura * 2;
     const pagina = await navegador.newPage({ viewport: { width: w, height: h } });
@@ -46,7 +49,7 @@ try {
     await pagina.goto(`http://127.0.0.1:${PORTA}/scripts/render/cena.html?variante=${nome}&w=${w}&h=${h}`);
     await pagina.waitForFunction(() => window.pronto === true, null, { timeout: 120_000 });
 
-    const progressos = pastaTeste ? [0, 0.5, 1] : Array.from({ length: v.quadros }, (_, i) => i / (v.quadros - 1));
+    const progressos = pastaTeste ? [0, 0.35, 0.7, 1] : Array.from({ length: v.quadros }, (_, i) => i / (v.quadros - 1));
     const saida = pastaTeste ?? join(RAIZ, 'public/hero/seq', nome);
     if (!pastaTeste) rmSync(saida, { recursive: true, force: true });
     mkdirSync(saida, { recursive: true });

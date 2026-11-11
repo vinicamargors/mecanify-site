@@ -33,24 +33,27 @@ export const ROTEIROS = {
       },
     };
   },
+  // Celular: câmera colada nos aparelhos (podem sair da borda). Começa no notebook, que preenche a tela,
+  // e termina com o iPhone grande à frente, legível.
   celular: (p) => {
-    const abre = faixa(p, 0, 0.45);
+    const abre = faixa(p, 0, 0.4);
     const vira = faixa(p, 0, 1);
     const entra = faixa(p, 0.3, 0.85);
+    const desce = faixa(p, 0.25, 1);
     return {
       tampa: lerp(-1.2, -1.83, abre),
-      notebook: { x: 0, y: 1.4, z: -1.2, giro: lerp(-0.6, -0.15, vira) },
+      notebook: { x: 0, y: 0.6, z: -1.2, giro: lerp(-0.55, -0.2, vira) },
       celular: {
-        x: lerp(1.6, 0.9, entra),
-        y: lerp(-4.5, -1.6, entra),
-        z: 1.6,
-        giro: lerp(Math.PI + 0.9, -0.25, entra),
-        inclina: lerp(0.25, 0.03, entra),
-        escala: 1.6,
+        x: lerp(1.4, 0.45, entra),
+        y: lerp(-5.5, -2.15, entra),
+        z: 2.6,
+        giro: lerp(Math.PI + 0.9, -0.18, entra),
+        inclina: lerp(0.25, 0.02, entra),
+        escala: 1.75,
       },
       camera: {
-        pos: [0.3, 3.6, 17],
-        alvo: [0.3, 1.3, 0],
+        pos: [lerp(0.2, 0.35, desce), lerp(3.1, 0.9, desce), lerp(8.2, 8.6, desce)],
+        alvo: [lerp(-0.1, 0.35, desce), lerp(2.0, -0.2, desce), 0],
       },
     };
   },

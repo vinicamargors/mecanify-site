@@ -34,7 +34,10 @@ const poster = (base: string) => `${base}/000.webp`;
 
       <!-- Abaixo de 1024px só o visual fica preso (o texto não caberia numa tela presa). -->
       <div data-palco-visual class="relative">
-        <div data-fixo-visual class="relative mx-auto aspect-[4/5] w-full max-w-md md:aspect-[6/5] md:max-w-none">
+        <div
+          data-fixo-visual
+          class="relative -mx-4 aspect-[3/4] w-[calc(100%+2rem)] md:mx-auto md:aspect-[6/5] md:w-full"
+        >
           <picture id="hero-poster" class="block h-full w-full">
             <source media="(max-width: 767px)" type="image/webp" srcset={poster(celular.base)} />
             <img

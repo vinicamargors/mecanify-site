@@ -1,4 +1,14 @@
 {
-  "desktop": { "base": "/hero/seq/desktop", "total": 120, "largura": 1200, "altura": 1000 },
-  "celular": { "base": "/hero/seq/celular", "total": 72, "largura": 800, "altura": 1000 }
+  "desktop": {
+    "base": "/hero/seq/desktop",
+    "total": 120,
+    "largura": 1200,
+    "altura": 1000
+  },
+  "celular": {
+    "base": "/hero/seq/celular",
+    "total": 60,
+    "largura": 780,
+    "altura": 1040
+  }
 }

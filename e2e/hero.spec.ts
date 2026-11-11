@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const QUADROS = { desktop: 120, celular: 72 };
+const QUADROS = { desktop: 120, celular: 60 };
 const largura = (page: Page) => page.viewportSize()?.width ?? 0;
 const ehCelular = (page: Page) => largura(page) < 768;
 const seq = (page: Page) => page.locator('#hero-seq');

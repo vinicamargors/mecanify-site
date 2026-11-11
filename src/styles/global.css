@@ -21,13 +21,20 @@
     align-items: center;
   }
 }
+/* Celular: os aparelhos saem da área de propósito; a borda de baixo esmaece em vez de cortar reto. */
+@media (max-width: 767px) {
+  [data-fixo-visual] {
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+  }
+}
 @media (max-width: 1023px) {
   html[data-hero-animado] [data-palco-visual] {
     height: 170vh;
   }
   html[data-hero-animado] [data-fixo-visual] {
     position: sticky;
-    top: 5rem;
+    top: 4rem;
   }
 }
 
