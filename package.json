@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/checar-config.mjs && astro build",
     "preview": "astro preview",
     "test": "vitest run",
     "e2e": "playwright test -c e2e/playwright.config.ts"
