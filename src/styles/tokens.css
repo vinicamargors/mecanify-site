@@ -1,0 +1,31 @@
+:root {
+  --c-canvas: 17 18 20;
+  --c-surface: 26 27 30;
+  --c-muted: 35 36 40;
+  --c-sunken: 14 15 17;
+  --c-line: 43 45 49;
+  --c-line-strong: 107 111 120;
+  --c-ink: 242 240 235;
+  --c-ink-muted: 180 176 168;
+  --c-ink-subtle: 142 138 130;
+  --c-brand: 245 165 36;
+  --c-brand-hover: 247 181 71;
+  --c-brand-ink: 245 181 68;
+  --c-on-brand: 26 20 7;
+  color-scheme: dark;
+  accent-color: rgb(var(--c-brand));
+  caret-color: rgb(var(--c-brand-ink));
+  scrollbar-color: rgb(var(--c-line-strong)) rgb(var(--c-canvas));
+  scrollbar-width: thin;
+  -webkit-tap-highlight-color: rgb(var(--c-brand) / 0.2);
+}
+
+::selection {
+  background-color: rgb(var(--c-brand) / 0.35);
+  color: rgb(var(--c-ink));
+}
+
+:focus-visible {
+  outline: 3px solid rgb(var(--c-brand));
+  outline-offset: 2px;
+}

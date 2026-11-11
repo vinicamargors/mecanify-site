@@ -1,0 +1,33 @@
+{
+  "name": "mecanify-site",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "e2e": "playwright test -c e2e/playwright.config.ts"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "astro": "^7.4.10",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "3.4",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@lhci/cli": "^0.16.0",
+    "@playwright/test": "^1.65.0",
+    "@types/three": "^0.187.0",
+    "jsdom": "^31.0.0",
+    "sharp": "^0.35.5",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
+  }
+}

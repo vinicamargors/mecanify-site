@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "www.mecanify.com.br" }],
+      "destination": "https://mecanify.com.br/:path",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/_astro/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}
