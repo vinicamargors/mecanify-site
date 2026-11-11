@@ -3,6 +3,13 @@
 @tailwind components;
 @tailwind utilities;
 
+#hero-fallback {
+  transition: opacity 0.4s ease;
+}
+#hero-fallback[data-oculto] {
+  opacity: 0;
+}
+
 @layer base {
   [hidden] {
     display: none !important;
