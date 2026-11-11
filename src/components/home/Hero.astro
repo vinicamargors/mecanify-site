@@ -6,8 +6,15 @@ import texturaMobile from '../../assets/telas/radar-390.webp';
 ---
 
 <section data-hero-palco class="relative">
-  <div data-hero-fixo class="overflow-hidden">
-  <div class="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
+  <div data-hero-fixo class="relative overflow-hidden">
+  <canvas id="hero-fundo" aria-hidden="true" class="pointer-events-none absolute inset-0 h-full w-full"></canvas>
+  <!-- Véu sobre o fundo animado onde fica o texto: mantém o título legível. -->
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 bg-gradient-to-b from-canvas via-canvas/80 to-transparent lg:bg-gradient-to-r lg:via-canvas/70"
+  >
+  </div>
+  <div class="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
     <div class="space-y-6">
       <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
         Sistema para oficina mecânica que cabe no ritmo do pátio
@@ -49,6 +56,45 @@ import texturaMobile from '../../assets/telas/radar-390.webp';
   </div>
   </div>
 </section>
+
+<script>
+  import { montarFundo } from './FundoAneis';
+
+  // Fundo animado: monta depois do carregamento para não competir com o conteúdo principal.
+  const canvasFundo = document.getElementById('hero-fundo') as HTMLCanvasElement | null;
+  const palcoFundo = document.querySelector<HTMLElement>('[data-hero-palco]');
+  const fixoFundo = document.querySelector<HTMLElement>('[data-hero-fixo]');
+
+  function progressoHero(): number {
+    if (!palcoFundo || !fixoFundo) return 0;
+    const curso = Math.max(palcoFundo.offsetHeight - fixoFundo.offsetHeight, palcoFundo.offsetHeight * 0.6, 1);
+    return Math.min(Math.max(-palcoFundo.getBoundingClientRect().top / curso, 0), 1);
+  }
+
+  function iniciarFundo(): void {
+    if (!canvasFundo) return;
+    const reduzMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Sem a liberação do 3D (aparelho fraco), o fundo vira um quadro parado.
+    const estatico = reduzMovimento || !document.documentElement.hasAttribute('data-hero3d');
+    const celular = matchMedia('(max-width: 767px)').matches;
+    try {
+      montarFundo(canvasFundo, {
+        cores: ['#F5B544', '#D98A0B', '#5A3A08'],
+        densidade: celular ? 220 : 300,
+        dprMax: celular ? 1.5 : 2,
+        progresso: progressoHero,
+        estatico,
+      });
+      canvasFundo.dataset.ativo = '';
+      if (estatico) canvasFundo.dataset.estatico = '';
+    } catch {
+      // Sem WebGL: fica o fundo liso da página.
+    }
+  }
+
+  if (document.readyState === 'complete') iniciarFundo();
+  else window.addEventListener('load', iniciarFundo, { once: true });
+</script>
 
 <script>
   const alvo = document.getElementById('hero-3d');

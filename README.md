@@ -33,3 +33,7 @@ node scripts/importar-prints.mjs <pasta-com-prints>
 ```
 
 O script grava AVIF e WebP em `src/assets/telas/`. Confira que nenhum print mostra dados de cliente real.
+
+## Créditos e licenças
+
+- Fundo animado do hero: port do "Cursor Ring Field" da Originkit (uso licenciado), em `src/components/home/FundoAneis.ts`.
