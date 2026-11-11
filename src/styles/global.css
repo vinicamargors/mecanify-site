@@ -10,6 +10,20 @@
   opacity: 0;
 }
 
+/* Hero preso (só com 3D ativo e a partir de 1024px): o palco reserva a altura da rolagem e o conteúdo fica sticky. */
+@media (min-width: 1024px) {
+  html[data-hero3d] [data-hero-palco] {
+    height: 220vh;
+  }
+  html[data-hero3d] [data-hero-fixo] {
+    position: sticky;
+    top: 4rem;
+    height: calc(100vh - 4rem);
+    display: flex;
+    align-items: center;
+  }
+}
+
 @layer base {
   [hidden] {
     display: none !important;

@@ -49,3 +49,9 @@ test('menu do celular abre inteiro dentro da tela', async ({ page }) => {
     expect(box!.x + box!.width, `${nome} à direita`).toBeLessThanOrEqual(largura);
   }
 });
+
+test('prints do sistema têm moldura de janela e de celular', async ({ page }) => {
+  await page.goto('/');
+  expect(await page.locator('[data-moldura=janela] img').count()).toBeGreaterThanOrEqual(10);
+  expect(await page.locator('[data-moldura=celular] img').count()).toBeGreaterThanOrEqual(5);
+});

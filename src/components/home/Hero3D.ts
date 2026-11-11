@@ -26,6 +26,11 @@ export type OpcoesHero = {
 };
 
 const GRAUS = Math.PI / 180;
+const DURACAO_ABERTURA_MS = 1000;
+
+const limitar = (v: number) => MathUtils.clamp(v, 0, 1);
+/** Suaviza 0..1 (começo e fim lentos). */
+const suave = (t: number) => limitar(t) * limitar(t) * (3 - 2 * limitar(t));
 
 function carregar(url: string): Promise<Texture> {
   return new Promise((resolve, reject) => {
@@ -106,24 +111,67 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
   const alvoRot = { x: 0, y: 0 };
   const rot = { x: 0, y: 0 };
 
+  let distanciaBase = 8.7;
+  let pronto = false;
+
+  function posicionarCamera(t2: number): void {
+    camera.position.set(MathUtils.lerp(0.15, 0.05, t2), MathUtils.lerp(1.0, 1.1, t2), distanciaBase * MathUtils.lerp(1, 0.84, t2));
+    camera.lookAt(MathUtils.lerp(0.25, 0.05, t2), MathUtils.lerp(0.5, 0.8, t2), 0);
+  }
+
   function ajustar(): void {
     const w = Math.max(1, alvo.clientWidth);
     const h = Math.max(1, alvo.clientHeight);
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     // Afasta a câmera em telas estreitas para a cena caber na largura.
-    const distancia = 8.7 * Math.max(1, 1.25 / camera.aspect);
-    camera.position.set(0.15, 1.0, distancia);
-    camera.lookAt(0.25, 0.5, 0);
+    distanciaBase = 8.7 * Math.max(1, 1.25 / camera.aspect);
+    posicionarCamera(opcoes.estatico ? 0 : t2Atual);
     camera.updateProjectionMatrix();
-    if (opcoes.estatico) renderer.render(cena, camera);
+    // setSize limpa o canvas: redesenha já, senão o hero pisca até o próximo quadro.
+    if (pronto) renderer.render(cena, camera);
   }
 
-  let giroScroll = 0;
+  const palco = alvo.closest<HTMLElement>('[data-hero-palco]');
+  const fixo = palco?.querySelector<HTMLElement>('[data-hero-fixo]') ?? null;
+  const consultaPreso = matchMedia('(min-width: 1024px)');
+  let t2Atual = 0;
 
-  function atualizarScroll(): void {
+  /** 0..1. Preso (desktop): avança com a rolagem do palco. Solto (celular): fase 2 acompanha a saída do hero. */
+  function calcularProgresso(): number {
+    if (opcoes.estatico) return 0.5;
+    if (palco && fixo && consultaPreso.matches && document.documentElement.hasAttribute('data-hero3d')) {
+      const topo = parseFloat(getComputedStyle(fixo).top) || 0;
+      const curso = Math.max(1, palco.offsetHeight - fixo.offsetHeight);
+      return limitar((topo - palco.getBoundingClientRect().top) / curso);
+    }
     const r = alvo.getBoundingClientRect();
-    giroScroll = MathUtils.clamp(-r.top / Math.max(1, r.height), 0, 1) * 10 * GRAUS;
+    return 0.5 + limitar(-r.top / Math.max(1, r.height)) * 0.5;
+  }
+
+  let inicioAbertura = 0;
+
+  function abertura(agora: number): number {
+    if (opcoes.estatico) return 1;
+    if (!inicioAbertura) inicioAbertura = agora;
+    return suave((agora - inicioAbertura) / DURACAO_ABERTURA_MS);
+  }
+
+  /** Fase 1 (0–50%): celular sobe e gira. Fase 2 (50–100%): câmera se aproxima e o conjunto gira. */
+  function aplicarPose(p: number, aberta: number): void {
+    const t1 = suave(p / 0.5);
+    const t2 = suave((p - 0.5) / 0.5);
+    t2Atual = t2;
+    tampa.rotation.x = MathUtils.lerp(Math.PI / 2, -0.18, aberta);
+    tampa.position.y = MathUtils.lerp(0.1, 0.05, aberta);
+    celular.position.y = MathUtils.lerp(-1.25, -0.4, t1);
+    celular.rotation.y = -0.35 + (1 - t1) * 0.9;
+    raiz.rotation.x = rot.x;
+    raiz.rotation.y = -0.2 + rot.y + t2 * 20 * GRAUS;
+    posicionarCamera(t2);
+    camera.updateProjectionMatrix();
+    alvo.dataset.progresso = p.toFixed(3);
+    alvo.dataset.abertura = aberta.toFixed(3);
   }
 
   function aoPonteiro(e: PointerEvent): void {
@@ -133,14 +181,12 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
     alvoRot.x = ny * 3 * GRAUS;
   }
 
-  function desenhar(): void {
+  function desenhar(agora: number): void {
     quadro = 0;
     if (desmontado || !visivel || document.hidden) return;
-    atualizarScroll();
     rot.x = MathUtils.lerp(rot.x, alvoRot.x, 0.08);
     rot.y = MathUtils.lerp(rot.y, alvoRot.y, 0.08);
-    raiz.rotation.x = rot.x;
-    raiz.rotation.y = -0.2 + rot.y + giroScroll;
+    aplicarPose(calcularProgresso(), abertura(agora));
     renderer.render(cena, camera);
     quadro = requestAnimationFrame(desenhar);
   }
@@ -197,7 +243,8 @@ export function montarHero(alvo: HTMLElement, texturas: Texturas, opcoes: Opcoes
       telaCelular.map = tMobile;
       telaCelular.color.set(0xffffff);
       telaCelular.needsUpdate = true;
-      raiz.rotation.y = -0.2;
+      aplicarPose(calcularProgresso(), opcoes.estatico ? 1 : 0);
+      pronto = true;
       renderer.render(cena, camera);
       opcoes.aoPrimeiroQuadro?.();
       if (!opcoes.estatico) {

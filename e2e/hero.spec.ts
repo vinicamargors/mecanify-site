@@ -102,3 +102,67 @@ test('peso do 3D (JS gzip + texturas) até 600 KB', async ({ page }) => {
   expect(vistos.size).toBeGreaterThanOrEqual(3);
   expect(total).toBeLessThanOrEqual(600_000);
 });
+
+const larguraDaTela = (page: Page) => page.viewportSize()?.width ?? 0;
+const visual = (page: Page) => page.locator('#hero-3d');
+const progresso = (page: Page) => async () => Number(await visual(page).getAttribute('data-progresso'));
+
+test('desktop: hero fica preso e o progresso acompanha a rolagem', async ({ page }) => {
+  test.skip(larguraDaTela(page) < 1024, 'hero preso só a partir de 1024px');
+  await aparelhoBom(page);
+  await page.goto('/');
+  await expect(canvas(page)).toHaveCount(1);
+  const y0 = (await visual(page).boundingBox())!.y;
+  expect(await progresso(page)()).toBeLessThan(0.05);
+
+  await page.evaluate(() => window.scrollTo(0, 400));
+  await expect.poll(progresso(page)).toBeGreaterThan(0.1);
+  expect(Math.abs((await visual(page).boundingBox())!.y - y0)).toBeLessThanOrEqual(2);
+
+  const fimDoPalco = await page.evaluate(() => {
+    const palco = document.querySelector<HTMLElement>('[data-hero-palco]')!;
+    const fixo = document.querySelector<HTMLElement>('[data-hero-fixo]')!;
+    return palco.offsetHeight - fixo.offsetHeight;
+  });
+  await page.evaluate((y) => window.scrollTo(0, y), fimDoPalco);
+  await expect.poll(progresso(page)).toBeGreaterThan(0.98);
+
+  await page.evaluate((y) => window.scrollTo(0, y + 500), fimDoPalco);
+  await expect.poll(async () => (await visual(page).boundingBox())!.y).toBeLessThan(y0 - 400);
+});
+
+test('o notebook abre a tampa sozinho ao carregar', async ({ page }) => {
+  await aparelhoBom(page);
+  await page.goto('/');
+  await expect(canvas(page)).toHaveCount(1);
+  await expect.poll(async () => Number(await visual(page).getAttribute('data-abertura')), { timeout: 4000 }).toBeGreaterThan(0.99);
+});
+
+test('celular: sem hero preso, a página rola normalmente', async ({ page }) => {
+  test.skip(larguraDaTela(page) >= 1024, 'só no celular');
+  await aparelhoBom(page);
+  await page.goto('/');
+  await expect(canvas(page)).toHaveCount(1);
+  const altura = await page.evaluate(() => ({
+    palco: document.querySelector<HTMLElement>('[data-hero-palco]')!.offsetHeight,
+    janela: window.innerHeight,
+  }));
+  expect(altura.palco).toBeLessThan(altura.janela * 1.4);
+  const y0 = (await visual(page).boundingBox())!.y;
+  await page.evaluate(() => window.scrollTo(0, 300));
+  await expect.poll(async () => (await visual(page).boundingBox())!.y).toBeLessThan(y0 - 250);
+});
+
+test.describe('reduzir movimento no palco', () => {
+  test.use({ reducedMotion: 'reduce' });
+  test('não prende o hero nem reserva altura extra', async ({ page }) => {
+    await aparelhoBom(page);
+    await page.goto('/');
+    await expect(page.locator('html')).not.toHaveAttribute('data-hero3d', /.*/);
+    const altura = await page.evaluate(() => ({
+      palco: document.querySelector<HTMLElement>('[data-hero-palco]')!.offsetHeight,
+      janela: window.innerHeight,
+    }));
+    expect(altura.palco).toBeLessThan(altura.janela * 1.4);
+  });
+});

@@ -5,8 +5,9 @@ import texturaDesktop from '../../assets/telas/radar-1440.webp';
 import texturaMobile from '../../assets/telas/radar-390.webp';
 ---
 
-<section class="relative overflow-hidden">
-  <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
+<section data-hero-palco class="relative">
+  <div data-hero-fixo class="overflow-hidden">
+  <div class="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
     <div class="space-y-6">
       <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
         Sistema para oficina mecânica que cabe no ritmo do pátio
@@ -44,33 +45,17 @@ import texturaMobile from '../../assets/telas/radar-390.webp';
       </div>
     </div>
   </div>
+  </div>
 </section>
 
 <script>
-  import { deveUsar3D } from '../../lib/dispositivo';
-
   const alvo = document.getElementById('hero-3d');
   const fallback = document.getElementById('hero-fallback');
 
-  function webglDisponivel(): boolean {
-    try {
-      const c = document.createElement('canvas');
-      return !!(c.getContext('webgl2') || c.getContext('webgl'));
-    } catch {
-      return false;
-    }
-  }
-
   if (alvo && fallback) {
     const forcado = new URLSearchParams(location.search).has('render-fallback');
-    const usar =
-      forcado ||
-      deveUsar3D({
-        webgl: webglDisponivel(),
-        reduzMovimento: matchMedia('(prefers-reduced-motion: reduce)').matches,
-        nucleos: navigator.hardwareConcurrency,
-        memoriaGb: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
-      });
+    // A decisão (WebGL, núcleos, memória, reduzir movimento) é tomada no <head>, em Base.astro.
+    const usar = forcado || document.documentElement.hasAttribute('data-hero3d');
 
     if (usar) {
       const observador = new IntersectionObserver(async (entradas) => {
