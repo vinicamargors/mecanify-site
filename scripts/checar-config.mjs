@@ -24,7 +24,9 @@ if (pendencias.length) {
 }
 
 // Produção na Vercel não sobe com dados de contato/empresa por preencher (IDs de rastreio vazios só avisam).
-if (process.env.VERCEL_ENV === 'production' && placeholders.length) {
+if (process.env.VERCEL_ENV === 'production' && placeholders.length && process.env.PERMITIR_PLACEHOLDERS) {
+  console.warn('⚠ PERMITIR_PLACEHOLDERS está ativo: este build de produção sobe com dados por preencher. Remova a variável antes de ir ao ar de verdade.');
+} else if (process.env.VERCEL_ENV === 'production' && placeholders.length) {
   console.error(`✖ Build de produção bloqueado: preencha ${placeholders.join(', ')} em src/site.config.ts.`);
   process.exit(1);
 }

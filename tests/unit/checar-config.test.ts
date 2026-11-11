@@ -21,6 +21,12 @@ describe('checar-config', () => {
     expect(r.stderr).toContain('whatsapp');
   });
 
+  it('PERMITIR_PLACEHOLDERS=1 libera o build de produção e ainda avisa', () => {
+    const r = rodar({ VERCEL_ENV: 'production', PERMITIR_PLACEHOLDERS: '1' });
+    expect(r.status).toBe(0);
+    expect(r.stderr).toContain('PERMITIR_PLACEHOLDERS');
+  });
+
   it('preview da Vercel continua só avisando', () => {
     expect(rodar({ VERCEL_ENV: 'preview' }).status).toBe(0);
   });

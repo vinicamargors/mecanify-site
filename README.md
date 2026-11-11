@@ -22,7 +22,7 @@ npm run e2e      # testes de navegador (precisa de build)
 | Textos legais | `src/content/legal/*.md`; após revisão jurídica, `revisado: true` | remove o aviso "Rascunho" |
 | DNS | Vercel: `mecanify.com.br` e `www` neste projeto; `app.` no projeto do sistema | — |
 
-Variável vazia = ferramenta desligada, sem erro. `npm run build` lista tudo que ainda falta. Em produção na Vercel (`VERCEL_ENV=production`), o build **falha** se WhatsApp, e-mail, CNPJ ou razão social ainda forem `TODO_PREENCHER`; previews só avisam.
+Variável vazia = ferramenta desligada, sem erro. `npm run build` lista tudo que ainda falta. Em produção na Vercel (`VERCEL_ENV=production`), o build **falha** se WhatsApp, e-mail, CNPJ ou razão social ainda forem `TODO_PREENCHER`; previews só avisam. Exceção temporária: a variável `PERMITIR_PLACEHOLDERS=1` libera o build de produção com placeholders (hoje ativa no projeto da Vercel para publicar uma prévia). **Remova-a antes de ligar `mecanify.com.br`.**
 
 ## Regerar os prints do sistema
 
