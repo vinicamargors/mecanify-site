@@ -86,3 +86,27 @@ export function track(evento: string, params: Record<string, string> = {}): void
   if (!estado.analytics && !estado.marketing) return;
   window.gtag?.('event', evento, params);
 }
+
+/** Clique delegado: CTAs de cadastro e entrada, WhatsApp e e-mail (`data-cta`, `data-evento`). */
+export function iniciarEventos(): void {
+  document.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-cta], [data-evento]');
+    if (!el) return;
+    const { cta, evento, ctaOrigem } = el.dataset;
+    if (cta === 'cadastro') {
+      track('cta_cadastro', { origem: ctaOrigem ?? 'desconhecida' });
+      registrarConversao();
+    } else if (cta === 'entrar') {
+      track('cta_entrar');
+    } else if (evento) {
+      track(evento);
+    }
+  });
+}
+
+function registrarConversao(): void {
+  if (!estado.marketing) return;
+  const ids = lerIds();
+  if (ids.ads && ids.adsLabel) window.gtag?.('event', 'conversion', { send_to: `${ids.ads}/${ids.adsLabel}` });
+  if (ids.pixel) window.fbq?.('track', 'Lead');
+}

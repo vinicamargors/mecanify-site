@@ -104,3 +104,60 @@ test('banner funciona só com teclado', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(banner(page)).toBeHidden();
 });
+
+/** Eventos de conversão gravados no dataLayer (formato gtag: ['event', nome, params]). */
+async function eventos(page: Page): Promise<[string, Record<string, string> | undefined][]> {
+  return page.evaluate(() =>
+    (window as any).dataLayer
+      .map((e: any) => Array.from(e))
+      .filter((e: any[]) => e[0] === 'event')
+      .map((e: any[]) => [e[1], e[2]]),
+  );
+}
+
+async function semNavegar(page: Page) {
+  await page.route(/app\.mecanify\.com\.br|wa\.me/, (r) => r.fulfill({ status: 200, body: 'ok' }));
+}
+
+test.describe('eventos de conversão', () => {
+  test('com consentimento: cta, WhatsApp e toggle anual viram eventos', async ({ page }) => {
+    await espiarTags(page);
+    await semNavegar(page);
+    await page.goto('/');
+    await banner(page).getByRole('button', { name: 'Aceitar' }).click();
+
+    await page.evaluate(() => document.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => e.preventDefault())));
+    await page.locator('main [data-cta-origem=hero]').click();
+    await page.getByRole('link', { name: 'Falar no WhatsApp' }).click();
+    await page.locator('#planos').getByRole('radio', { name: /Anual/ }).click();
+
+    const nomes = (await eventos(page)).map(([n]) => n);
+    expect(nomes).toContain('cta_cadastro');
+    expect(nomes).toContain('whatsapp_click');
+    expect(nomes).toContain('plano_toggle_anual');
+    expect((await eventos(page)).find(([n]) => n === 'cta_cadastro')?.[1]).toMatchObject({ origem: 'hero' });
+  });
+
+  test('sem consentimento: nenhum evento é enviado', async ({ page }) => {
+    await espiarTags(page);
+    await semNavegar(page);
+    await page.goto('/');
+    await page.evaluate(() => document.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => e.preventDefault())));
+    await page.locator('main [data-cta-origem=hero]').click();
+    await page.locator('#planos').getByRole('radio', { name: /Anual/ }).click();
+    expect(await eventos(page)).toEqual([]);
+  });
+
+  test('conversão: Ads e Pixel só com Marketing', async ({ page }) => {
+    await espiarTags(page);
+    await semNavegar(page);
+    await page.goto('/');
+    await banner(page).getByRole('button', { name: 'Aceitar' }).click();
+    await page.evaluate(() => document.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => e.preventDefault())));
+    await page.locator('main [data-cta-origem=hero]').click();
+    const conversao = (await eventos(page)).find(([n]) => n === 'conversion');
+    expect(conversao?.[1]).toMatchObject({ send_to: 'AW-TESTE/LABELTESTE' });
+    const fbq = await page.evaluate(() => (window as any).fbq.queue.map((a: any) => Array.from(a)));
+    expect(fbq).toContainEqual(['track', 'Lead']);
+  });
+});

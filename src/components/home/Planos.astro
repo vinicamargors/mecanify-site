@@ -96,6 +96,8 @@ import { site } from '../../site.config';
 </style>
 
 <script>
+  import { track } from '../../lib/rastreio';
+
   const secao = document.getElementById('planos');
   const grupo = secao?.querySelector<HTMLElement>('[data-toggle-periodo]');
   if (secao && grupo) {
@@ -106,6 +108,7 @@ import { site } from '../../site.config';
         r.tabIndex = i === j ? 0 : -1;
       });
       secao.dataset.periodo = radios[i].dataset.periodoValor;
+      if (secao.dataset.periodo === 'anual') track('plano_toggle_anual');
       if (foco) radios[i].focus();
     };
     radios.forEach((r, i) => r.addEventListener('click', () => escolher(i)));

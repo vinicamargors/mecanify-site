@@ -59,6 +59,8 @@ const idsRastreio = {
     <script is:inline defer src="/_vercel/insights/script.js"></script>
     <script>
       import { linkCadastro } from '../lib/links';
+      import { iniciarEventos } from '../lib/rastreio';
+      iniciarEventos();
       document.querySelectorAll<HTMLAnchorElement>('a[data-cta="cadastro"]').forEach((a) => {
         a.href = linkCadastro(location.search);
       });
