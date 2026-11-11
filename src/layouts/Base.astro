@@ -7,6 +7,7 @@ import JsonLd from '../components/JsonLd.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppFlutuante from '../components/WhatsAppFlutuante.astro';
+import BannerCookies from '../components/BannerCookies.astro';
 
 interface Props {
   titulo: string;
@@ -15,6 +16,12 @@ interface Props {
   jsonLd?: object[];
 }
 const { titulo, descricao, caminho, jsonLd = [] } = Astro.props;
+const idsRastreio = {
+  ga4: import.meta.env.PUBLIC_GA4_ID ?? '',
+  pixel: import.meta.env.PUBLIC_META_PIXEL_ID ?? '',
+  ads: import.meta.env.PUBLIC_GOOGLE_ADS_ID ?? '',
+  adsLabel: import.meta.env.PUBLIC_GOOGLE_ADS_CONVERSION_LABEL ?? '',
+};
 ---
 
 <!doctype html>
@@ -24,6 +31,20 @@ const { titulo, descricao, caminho, jsonLd = [] } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#111214" />
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () {
+        window.dataLayer.push(arguments);
+      };
+      window.gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500,
+      });
+    </script>
+    <script type="application/json" id="config-rastreio" set:html={JSON.stringify(idsRastreio)} />
     <Seo titulo={titulo} descricao={descricao} caminho={caminho} />
     <JsonLd dados={jsonLd} />
   </head>
@@ -34,6 +55,8 @@ const { titulo, descricao, caminho, jsonLd = [] } = Astro.props;
     </main>
     <Footer />
     <WhatsAppFlutuante />
+    <BannerCookies />
+    <script is:inline defer src="/_vercel/insights/script.js"></script>
     <script>
       import { linkCadastro } from '../lib/links';
       document.querySelectorAll<HTMLAnchorElement>('a[data-cta="cadastro"]').forEach((a) => {

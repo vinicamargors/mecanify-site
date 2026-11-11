@@ -8,7 +8,8 @@ import { linkWhatsApp } from '../lib/links';
   href={linkWhatsApp(site.contato.whatsapp, site.contato.mensagemWhatsApp)}
   aria-label="Falar no WhatsApp"
   data-evento="whatsapp_click"
-  class="fixed bottom-4 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-on-brand transition-transform hover:scale-105"
+  style="bottom: calc(1rem + var(--altura-banner, 0px))"
+  class="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-on-brand transition-transform hover:scale-105"
 >
   <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
     <path

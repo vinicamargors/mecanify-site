@@ -1,0 +1,93 @@
+<div
+  id="banner-cookies"
+  role="dialog"
+  aria-label="Cookies"
+  aria-describedby="banner-cookies-texto"
+  tabindex="-1"
+  hidden
+  class="fixed inset-x-0 bottom-0 z-50 bg-surface p-4 shadow-none outline-none md:p-5"
+>
+  <div class="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center">
+    <div class="flex-1 text-sm text-ink-muted" id="banner-cookies-texto">
+      <p>
+        Usamos cookies para medir visitas e melhorar nossos anúncios. Você escolhe o que permitir.
+        <a href="/cookies" class="text-brand-ink underline">Saiba mais</a>.
+      </p>
+      <fieldset id="cookies-categorias" hidden class="mt-3 space-y-1">
+        <legend class="sr-only">Categorias de cookies</legend>
+        <label class="flex min-h-11 items-center gap-3 text-ink">
+          <input type="checkbox" checked disabled class="h-5 w-5 accent-brand" />
+          Necessários (sempre ativos)
+        </label>
+        <label class="flex min-h-11 items-center gap-3 text-ink">
+          <input type="checkbox" name="analytics" class="h-5 w-5 accent-brand" />
+          Analytics
+        </label>
+        <label class="flex min-h-11 items-center gap-3 text-ink">
+          <input type="checkbox" name="marketing" class="h-5 w-5 accent-brand" />
+          Marketing
+        </label>
+      </fieldset>
+    </div>
+    <div id="cookies-botoes-iniciais" class="flex flex-wrap gap-2">
+      <button type="button" data-acao="recusar" class="min-h-11 rounded-lg bg-muted px-5 text-sm font-medium hover:bg-line">Recusar</button>
+      <button type="button" data-acao="personalizar" class="min-h-11 rounded-lg bg-muted px-5 text-sm font-medium hover:bg-line">Personalizar</button>
+      <button type="button" data-acao="aceitar" class="min-h-11 rounded-lg bg-brand px-5 text-sm font-medium text-on-brand hover:bg-brand-hover">Aceitar</button>
+    </div>
+    <div id="cookies-botoes-salvar" hidden class="flex flex-wrap gap-2">
+      <button type="button" data-acao="salvar" class="min-h-11 rounded-lg bg-brand px-5 text-sm font-medium text-on-brand hover:bg-brand-hover">Salvar escolha</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { lerConsentimento, salvarConsentimento } from '../lib/consentimento';
+  import { aplicarConsentimento } from '../lib/rastreio';
+
+  const banner = document.getElementById('banner-cookies') as HTMLElement;
+  const categorias = document.getElementById('cookies-categorias') as HTMLElement;
+  const iniciais = document.getElementById('cookies-botoes-iniciais') as HTMLElement;
+  const salvar = document.getElementById('cookies-botoes-salvar') as HTMLElement;
+  const analytics = banner.querySelector<HTMLInputElement>('input[name=analytics]')!;
+  const marketing = banner.querySelector<HTMLInputElement>('input[name=marketing]')!;
+
+  function mostrar(modoPersonalizar: boolean): void {
+    categorias.hidden = !modoPersonalizar;
+    iniciais.hidden = modoPersonalizar;
+    salvar.hidden = !modoPersonalizar;
+    banner.hidden = false;
+    document.documentElement.style.setProperty('--altura-banner', `${banner.offsetHeight}px`);
+  }
+
+  function fechar(): void {
+    banner.hidden = true;
+    document.documentElement.style.removeProperty('--altura-banner');
+  }
+
+  function decidir(escolha: { analytics: boolean; marketing: boolean }): void {
+    aplicarConsentimento(salvarConsentimento(escolha));
+    fechar();
+  }
+
+  banner.addEventListener('click', (e) => {
+    const acao = (e.target as HTMLElement).closest<HTMLElement>('[data-acao]')?.dataset.acao;
+    if (acao === 'aceitar') decidir({ analytics: true, marketing: true });
+    else if (acao === 'recusar') decidir({ analytics: false, marketing: false });
+    else if (acao === 'personalizar') mostrar(true);
+    else if (acao === 'salvar') decidir({ analytics: analytics.checked, marketing: marketing.checked });
+  });
+
+  document.querySelectorAll('[data-abrir-cookies]').forEach((el) =>
+    el.addEventListener('click', () => {
+      const atual = lerConsentimento();
+      analytics.checked = atual?.analytics ?? false;
+      marketing.checked = atual?.marketing ?? false;
+      mostrar(true);
+      banner.focus();
+    }),
+  );
+
+  const salvo = lerConsentimento();
+  if (salvo) aplicarConsentimento(salvo);
+  else mostrar(false);
+</script>
