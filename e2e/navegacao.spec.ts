@@ -36,3 +36,16 @@ test('alvos do header com pelo menos 44px', async ({ page }) => {
     expect(box?.height ?? 0, `alvo ${i}`).toBeGreaterThanOrEqual(44);
   }
 });
+
+test('menu do celular abre inteiro dentro da tela', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 768, 'menu compacto só no celular');
+  await page.goto('/');
+  await page.getByText('Menu', { exact: true }).click();
+  const largura = page.viewportSize()!.width;
+  for (const nome of ['Recursos', 'Telas', 'Planos', 'Dúvidas']) {
+    const box = await page.getByRole('navigation', { name: 'Menu' }).getByRole('link', { name: nome }).boundingBox();
+    expect(box, nome).not.toBeNull();
+    expect(box!.x, `${nome} à esquerda`).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width, `${nome} à direita`).toBeLessThanOrEqual(largura);
+  }
+});

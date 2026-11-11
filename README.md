@@ -22,7 +22,7 @@ npm run e2e      # testes de navegador (precisa de build)
 | Textos legais | `src/content/legal/*.md`; após revisão jurídica, `revisado: true` | remove o aviso "Rascunho" |
 | DNS | Vercel: `mecanify.com.br` e `www` neste projeto; `app.` no projeto do sistema | — |
 
-Variável vazia = ferramenta desligada, sem erro. `npm run build` lista tudo que ainda falta.
+Variável vazia = ferramenta desligada, sem erro. `npm run build` lista tudo que ainda falta. Em produção na Vercel (`VERCEL_ENV=production`), o build **falha** se WhatsApp, e-mail, CNPJ ou razão social ainda forem `TODO_PREENCHER`; previews só avisam.
 
 ## Regerar os prints do sistema
 
