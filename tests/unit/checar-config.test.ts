@@ -1,9 +1,17 @@
 import { spawnSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-function rodar(env: Record<string, string>) {
+// Config de teste com um placeholder: o site real já está preenchido.
+const pasta = mkdtempSync(join(tmpdir(), 'checar-config-'));
+const comPlaceholder = join(pasta, 'site.config.ts');
+writeFileSync(comPlaceholder, "export const site = {\n  contato: {\n    whatsapp: 'TODO_PREENCHER',\n  },\n};\n");
+
+function rodar(env: Record<string, string>, arquivo = comPlaceholder) {
   return spawnSync('node', ['scripts/checar-config.mjs'], {
-    env: { PATH: process.env.PATH ?? '', ...env },
+    env: { PATH: process.env.PATH ?? '', CHECAR_CONFIG_ARQUIVO: arquivo, ...env },
     encoding: 'utf8',
   });
 }
@@ -25,6 +33,12 @@ describe('checar-config', () => {
     const r = rodar({ VERCEL_ENV: 'production', PERMITIR_PLACEHOLDERS: '1' });
     expect(r.status).toBe(0);
     expect(r.stderr).toContain('PERMITIR_PLACEHOLDERS');
+  });
+
+  it('a config real do site não tem placeholders: produção passa', () => {
+    const r = rodar({ VERCEL_ENV: 'production' }, 'src/site.config.ts');
+    expect(r.status).toBe(0);
+    expect(r.stderr).not.toContain('site.config.ts:');
   });
 
   it('preview da Vercel continua só avisando', () => {

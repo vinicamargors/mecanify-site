@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { precisaAviso, substituirMarcadores } from '../../src/lib/legal';
 
-const dados = { razaoSocial: 'Oficina Digital Ltda', cnpj: '12.345.678/0001-90', email: 'contato@mecanify.com.br' };
+const dados = { empresa: 'Mecanify', email: 'contato@mecanify.com.br' };
 
 describe('substituirMarcadores', () => {
   it('troca todos os marcadores conhecidos', () => {
-    expect(substituirMarcadores('{{razaoSocial}}, CNPJ {{cnpj}} ({{razaoSocial}})', dados)).toBe(
-      'Oficina Digital Ltda, CNPJ 12.345.678/0001-90 (Oficina Digital Ltda)',
+    expect(substituirMarcadores('{{empresa}}: {{email}} ({{empresa}})', dados)).toBe(
+      'Mecanify: contato@mecanify.com.br (Mecanify)',
     );
   });
   it('mantém marcador desconhecido à vista para ser notado', () => {

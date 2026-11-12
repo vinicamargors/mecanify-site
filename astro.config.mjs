@@ -14,8 +14,7 @@ export default defineConfig({
     processor: unified({
       remarkPlugins: [
         remarkDados({
-          razaoSocial: config.empresa.razaoSocial,
-          cnpj: config.empresa.cnpj,
+          empresa: 'Mecanify',
           email: config.contato.email,
         }),
       ],

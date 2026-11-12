@@ -14,7 +14,7 @@ npm run e2e      # testes de navegador (precisa de build)
 
 | Item | Onde editar | Exemplo |
 |---|---|---|
-| WhatsApp, e-mail, CNPJ, razão social | `src/site.config.ts` (valores `TODO_PREENCHER`) | `whatsapp: '5511999999999'` |
+| WhatsApp e e-mail | `src/site.config.ts` → `contato` | `whatsapp: '5511976608449'` |
 | Preços e itens dos planos | `src/site.config.ts` → `planos` | `mensal: 197` |
 | Google Analytics 4 | variável `PUBLIC_GA4_ID` na Vercel (Settings → Environment Variables) | `G-XXXXXXXXXX` |
 | Meta Pixel | `PUBLIC_META_PIXEL_ID` | `123456789012345` |
@@ -22,7 +22,7 @@ npm run e2e      # testes de navegador (precisa de build)
 | Textos legais | `src/content/legal/*.md`; após revisão jurídica, `revisado: true` | remove o aviso "Rascunho" |
 | DNS | Vercel: `mecanify.com.br` e `www` neste projeto; `app.` no projeto do sistema | — |
 
-Variável vazia = ferramenta desligada, sem erro. `npm run build` lista tudo que ainda falta. Em produção na Vercel (`VERCEL_ENV=production`), o build **falha** se WhatsApp, e-mail, CNPJ ou razão social ainda forem `TODO_PREENCHER`; previews só avisam. Exceção temporária: a variável `PERMITIR_PLACEHOLDERS=1` libera o build de produção com placeholders (hoje ativa no projeto da Vercel para publicar uma prévia). **Remova-a antes de ligar `mecanify.com.br`.**
+Variável vazia = ferramenta desligada, sem erro. `npm run build` lista tudo que ainda falta. Em produção na Vercel (`VERCEL_ENV=production`), o build **falha** se algum valor de `src/site.config.ts` for `TODO_PREENCHER`; previews só avisam. A variável `PERMITIR_PLACEHOLDERS=1` libera esse bloqueio; não é mais necessária e pode ser apagada do projeto na Vercel.
 
 ## Regerar os prints do sistema
 

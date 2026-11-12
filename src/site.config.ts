@@ -1,5 +1,5 @@
 /**
- * Dados editáveis da landing. Valores `TODO_PREENCHER` precisam ser trocados antes de publicar.
+ * Dados editáveis da landing. Um valor `TODO_PREENCHER` bloqueia o build de produção (ver README).
  * IDs de rastreio NÃO ficam aqui: use as variáveis PUBLIC_* (ver .env.example).
  */
 export type PlanoId = 'bancada' | 'patio-pro' | 'oficina-full';
@@ -15,7 +15,6 @@ export type Plano = {
 };
 
 export type SiteConfig = {
-  empresa: { razaoSocial: string; cnpj: string };
   contato: {
     /** Só dígitos, com DDI. Ex.: 5511999999999 */
     whatsapp: string;
@@ -30,14 +29,10 @@ export type SiteConfig = {
 export const PLACEHOLDER = 'TODO_PREENCHER';
 
 export const site: SiteConfig = {
-  empresa: {
-    razaoSocial: 'TODO_PREENCHER',
-    cnpj: 'TODO_PREENCHER',
-  },
   contato: {
-    whatsapp: 'TODO_PREENCHER',
+    whatsapp: '5511976608449',
     mensagemWhatsApp: 'Olá! Quero conhecer o Mecanify.',
-    email: 'TODO_PREENCHER',
+    email: 'contato@mecanify.com.br',
     assuntoEmail: 'Quero conhecer o Mecanify',
   },
   urls: {

@@ -2,7 +2,9 @@
 import { readFileSync } from 'node:fs';
 
 const IDS = ['PUBLIC_GA4_ID', 'PUBLIC_META_PIXEL_ID', 'PUBLIC_GOOGLE_ADS_ID', 'PUBLIC_GOOGLE_ADS_CONVERSION_LABEL'];
-const texto = readFileSync(new URL('../src/site.config.ts', import.meta.url), 'utf8');
+// CHECAR_CONFIG_ARQUIVO só existe para os testes apontarem outro arquivo.
+const arquivo = process.env.CHECAR_CONFIG_ARQUIVO ?? new URL('../src/site.config.ts', import.meta.url);
+const texto = readFileSync(arquivo, 'utf8');
 
 const pendencias = [];
 const placeholders = [];

@@ -25,5 +25,3 @@ Clique em **Preferências de cookies**, no rodapé de qualquer página, e marque
 ## Mais informações
 
 Veja também a [Política de Privacidade](/privacidade). Dúvidas: [{{email}}](mailto:{{email}}).
-
-{{razaoSocial}}, CNPJ {{cnpj}}.

@@ -2,7 +2,7 @@
 import { site } from '../site.config';
 import { linkEmail, linkWhatsApp } from '../lib/links';
 
-const { empresa, contato } = site;
+const { contato } = site;
 ---
 
 <footer class="bg-surface">
@@ -13,7 +13,6 @@ const { empresa, contato } = site;
         <span class="text-base font-semibold">Mecanify</span>
       </a>
       <p class="text-sm text-ink-muted">Sistema para oficina mecânica.</p>
-      <p class="text-sm text-ink-subtle">{empresa.razaoSocial}<br />CNPJ: {empresa.cnpj}</p>
     </div>
 
     <div class="space-y-1 text-sm">

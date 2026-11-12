@@ -14,8 +14,13 @@ test('contato: WhatsApp flutuante, e-mail e dados da empresa', async ({ page }) 
   const zap = page.getByRole('link', { name: 'Falar no WhatsApp' });
   await expect(zap).toBeVisible();
   expect(await zap.getAttribute('href')).toMatch(/^https:\/\/wa\.me\//);
-  expect(await page.locator('footer a[href^="mailto:"]').first().getAttribute('href')).toMatch(/^mailto:/);
-  await expect(page.locator('footer')).toContainText('CNPJ');
+  expect(await zap.getAttribute('href')).toMatch(/^https:\/\/wa\.me\/5511976608449\?text=/);
+  expect(await page.locator('footer a[href^="mailto:"]').first().getAttribute('href')).toMatch(
+    /^mailto:contato@mecanify\.com\.br\?subject=/,
+  );
+  await expect(page.locator('footer')).toContainText('contato@mecanify.com.br');
+  await expect(page.locator('footer')).not.toContainText('CNPJ');
+  await expect(page.locator('footer')).not.toContainText('TODO_PREENCHER');
 });
 
 test('header: Entrar aponta para o app', async ({ page }) => {

@@ -5,7 +5,7 @@ atualizadoEm: 2026-11-11
 revisado: false
 ---
 
-Estes termos valem para o uso do site **mecanify.com.br**, oferecido por {{razaoSocial}}, CNPJ {{cnpj}}.
+Estes termos valem para o uso do site **mecanify.com.br**, oferecido pela {{empresa}}.
 
 ## O que é o Mecanify
 

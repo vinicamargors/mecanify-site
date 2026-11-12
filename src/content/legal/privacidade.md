@@ -9,7 +9,7 @@ Esta política explica como o site **mecanify.com.br** trata dados pessoais, con
 
 ## Quem é o controlador
 
-{{razaoSocial}}, CNPJ {{cnpj}}. Contato para assuntos de privacidade: [{{email}}](mailto:{{email}}).
+{{empresa}}. Contato para assuntos de privacidade: [{{email}}](mailto:{{email}}).
 
 ## Quais dados coletamos
 
